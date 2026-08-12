@@ -12,8 +12,8 @@ global other_page
 
 other_page = ft.Container(expand=True)
 
-def open_metronome(page):
 
+def open_metronome(page):
 	global metronome_running
 
 	global other_page
@@ -35,7 +35,7 @@ def open_metronome(page):
 				field.value = get_bpm_cap()
 
 			bpm = field.value
-			tempo_bpm_text.value = f"{bpm} mbps"
+			tempo_bpm_text.value = f"{bpm} BPM"
 			tempo_bpm_text.update()
 			field.update()
 		except Exception:
@@ -59,7 +59,118 @@ def open_metronome(page):
 
 		textfield.update()
 
-	def run_metronome(button, tempos_button, current_tempo, bpm_field):
+	def increase_compass_tempo_counting(e, textfield):
+		value = int(textfield.value or 0)
+
+		if value > 0 and value < 12:
+			value += 1
+
+		textfield.value = str(value)
+		update_compass_tempo_buttons()
+		textfield.update()
+
+	def decrease_compass_tempo_counting(e, textfield):
+		value = int(textfield.value or 0)
+
+		if value > 1:
+			value -= 1
+
+		textfield.value = str(value)
+		update_compass_tempo_buttons()
+		textfield.update()
+
+	def play_click():
+		import sounddevice as sd
+		import numpy as np
+
+		sample_rate = 44100
+		duration = 0.05
+		frequency = 1000
+
+		t = np.linspace(
+			0,
+			duration,
+			int(sample_rate * duration),
+			False
+		)
+
+		sound = 0.3 * np.sin(2 * np.pi * frequency * t)
+
+		sd.play(sound, sample_rate, blocking=False)
+
+	def play_strong_click():
+		import sounddevice as sd
+		import numpy as np
+
+		sample_rate = 44100
+		duration = 0.07
+		frequency = 1500
+		volume = 0.8
+
+		t = np.linspace(
+			0,
+			duration,
+			int(sample_rate * duration),
+			endpoint=False
+		)
+
+		sound = np.sin(2 * np.pi * frequency * t)
+
+		envelope = np.exp(-t * 60)
+
+		sound = sound * envelope * volume
+
+		sd.play(
+			sound.astype(np.float32),
+			sample_rate,
+			blocking=False
+		)
+
+	def only_numbers(e):
+		try:
+			value = "".join(c for c in e.control.value if c.isdigit())
+
+			if value == "":
+				value = 1
+
+			if int(e.control.value) > 12:
+				value = 12
+
+			if e.control.value != value:
+				e.control.value = value
+				e.control.update()
+
+			update_compass_tempo_buttons()
+		except ValueError:
+			pass
+
+	def update_compass_tempo_buttons():
+		global metronome_running
+
+		tempo = int(textfield_compass_tempo.value or 1)
+
+		tempos_button.controls.clear()
+
+		for i in range(tempo):
+			tempos_button.controls.append(
+				ft.Container(
+					key="tempos_button",
+					width=10,
+					height=10,
+					border_radius=50,
+				)
+			)
+
+		set_theme(page, get_current_theme())
+
+		# reset metronome
+		metronome_running = False
+		start_tempo_button.text = "Começar Metrónomo"
+		page.update()
+
+		tempos_button.update()
+
+	def run_metronome(button, tempos_button, current_tempo, bpm_field, tempo):
 		global metronome_running
 
 		while metronome_running:
@@ -69,45 +180,49 @@ def open_metronome(page):
 
 			current_tempo += 1
 
-			if current_tempo > 4:
+			if current_tempo > tempo:
 				current_tempo = 1
 
-			tempos_button.controls[current_tempo - 1].key = "tempos_active_button"
+			current_index = current_tempo - 1
+			previous_index = (current_index - 1) % tempo
+
+			tempos_button.controls[previous_index].key = "tempos_button"
+			tempos_button.controls[current_index].key = "tempos_active_button"
+
+			if current_tempo == 1:
+				# play metronome strong sound
+				play_strong_click()
 
 			if current_tempo > 1:
-				tempos_button.controls[current_tempo - 2].key = "tempos_button"
-			else:
-				tempos_button.controls[3].key = "tempos_button"
+				# play metronome sound
+				play_click()
 
 			set_theme(page, get_current_theme())
 			page.update()
 
-			print(f"BPM: {bpm} | Intervalo: {interval:.3f}s")
-
 			sleep(interval)
 
-	def start_tempo(button: ft.Button, tempos_button: ft.Row, current_tempo, bpm_field):
+	def start_tempo(button: ft.Button, tempos_button: ft.Row, current_tempo, bpm_field, tempo):
 		global metronome_running
 
 		if not metronome_running:
 			metronome_running = True
-			button.text = "Stop Metronome"
+			button.text = "Parar Metrónomo"
 
 			for i in range(tempo):
 				tempos_button.controls[i].key = "tempos_button"
 
-			set_theme(page, get_current_theme())
 			page.update()
 
 			threading.Thread(
 				target=run_metronome,
-				args=(button, tempos_button, current_tempo, bpm_field),
+				args=(button, tempos_button, current_tempo, bpm_field, tempo),
 				daemon=True
 			).start()
 
 		else:
 			metronome_running = False
-			button.text = "Start Metronome"
+			button.text = "Começar Metrónomo"
 			page.update()
 
 	metronome_running = False
@@ -118,20 +233,84 @@ def open_metronome(page):
 		tight=True,
 		spacing=10
 	)
+
+	textfield_compass_tempo = ft.TextField(hint_text="Max 12",
+	                                       width=100,
+	                                       value=4,
+	                                       on_change=lambda e: only_numbers(e)
+	)
+	more_compass_tempo_choose = ft.Button("+",
+	                                      style=ft.ButtonStyle(shape={"": ft.RoundedRectangleBorder(radius=5)}),
+	                                      on_click= lambda e: increase_compass_tempo_counting(e, textfield_compass_tempo)
+	                                      )
+	less_compass_tempo_choose = ft.Button("-",
+	                                      style=ft.ButtonStyle(shape={"": ft.RoundedRectangleBorder(radius=5)}),
+	                                      on_click= lambda e: decrease_compass_tempo_counting(e, textfield_compass_tempo)
+	                                      )
+
+	tempo_list = ft.Column(
+		[
+			ft.Text(
+				"Tempos por Compasso:",
+				size=15,
+				weight=ft.FontWeight.W_500,
+				text_align=ft.TextAlign.CENTER,
+			),
+
+			ft.Row(
+				[
+					less_compass_tempo_choose,
+					textfield_compass_tempo,
+					more_compass_tempo_choose,
+				],
+				alignment=ft.MainAxisAlignment.CENTER,
+				vertical_alignment=ft.CrossAxisAlignment.CENTER,
+				spacing=8,
+			),
+		],
+		alignment=ft.MainAxisAlignment.CENTER,
+		horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+		spacing=10,
+		tight=True,
+	)
+
 	tempo_bpm_text = ft.Text(f"{BPM} BPM", size=50)
 	choose_tempo_field = ft.TextField(width=100, value=1, on_change=lambda e: verify_tempo(e, BPM))
 	less_button = ft.Button("-",
 	                        on_click=lambda e: remove_counting(choose_tempo_field, BPM),
 	                        height=choose_tempo_field.height,
-							style = ft.ButtonStyle(shape={"": ft.RoundedRectangleBorder(radius=5)})
+	                        style=ft.ButtonStyle(shape={"": ft.RoundedRectangleBorder(radius=5)})
 	                        )
 	more_button = ft.Button("+",
 	                        on_click=lambda e: elevate_counting(choose_tempo_field, BPM),
 	                        height=choose_tempo_field.height,
 	                        style=ft.ButtonStyle(shape={"": ft.RoundedRectangleBorder(radius=5)})
 	                        )
+
+	tempo_rows = ft.Column(
+		[
+			ft.Text("Batidas por Minuto:",
+			        size=15,
+			        weight=ft.FontWeight.W_500,
+			        text_align=ft.TextAlign.CENTER),
+			ft.Row(
+				[
+					less_button,
+					choose_tempo_field,
+					more_button,
+				],
+				alignment=ft.MainAxisAlignment.CENTER,
+				vertical_alignment=ft.CrossAxisAlignment.CENTER,
+				spacing=8,
+			)
+		],
+		alignment=ft.MainAxisAlignment.CENTER,
+		horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+		spacing=10,
+		tight=True,
+	)
 	start_tempo_button = ft.Button(
-		"Start Metronome",
+		"Começar Metrónomo",
 		style=ft.ButtonStyle(
 			shape={"": ft.RoundedRectangleBorder(radius=5)},
 			padding=15
@@ -140,13 +319,13 @@ def open_metronome(page):
 			start_tempo_button,
 			tempos_button,
 			current_tempo,
-			choose_tempo_field
+			choose_tempo_field,
+			int(textfield_compass_tempo.value)
 		)
 	)
 
-	tempo = 4
 	current_tempo = 0
-	for i in range(tempo):
+	for i in range(textfield_compass_tempo.value):
 		tempos_button.controls.append(
 			ft.Container(
 				key="tempos_button",
@@ -161,7 +340,7 @@ def open_metronome(page):
 		[
 			ft.Container(),
 			ft.Text(
-				"Metronome",
+				"Metrónomo",
 				size=30,
 			),
 
@@ -171,15 +350,8 @@ def open_metronome(page):
 						tempo_bpm_text,
 
 						tempos_button,
-
-						ft.Row(
-							[
-								less_button,
-								choose_tempo_field,
-								more_button,
-							],
-							alignment=ft.MainAxisAlignment.CENTER,
-						),
+						tempo_list,
+						tempo_rows,
 					],
 					spacing=20,
 					horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -199,11 +371,14 @@ def open_metronome(page):
 	set_theme(page, get_current_theme())
 	page.update()
 
+
 def open_tuner():
 	pass
 
+
 def open_escale():
 	pass
+
 
 def get_icon_theme():
 	current_theme = get_current_theme()
@@ -211,10 +386,12 @@ def get_icon_theme():
 		return ft.Icons.DARK_MODE
 	return ft.Icons.LIGHT_MODE
 
+
 def swap_theme_button(page, icon):
 	swap_theme(page)
 	icon.name = get_icon_theme()
 	icon.update()
+
 
 def configure_left_bar_button(page: ft.Page):
 	top_buttons = ft.Column(
@@ -252,7 +429,7 @@ def configure_left_bar_button(page: ft.Page):
 	middle_buttons_text_icons = [
 		("Afinador", ft.Icons.MIC),
 		("Escalas", ft.Icons.MUSIC_NOTE),
-		("Metronomo", ft.Icons.TIMER)]
+		("Metrónomo", ft.Icons.TIMER)]
 
 	for i, (text, icon) in enumerate(middle_buttons_text_icons):
 		middle_buttons.controls.append(
@@ -276,7 +453,7 @@ def configure_left_bar_button(page: ft.Page):
 			)
 		)
 
-		if text == "Metronomo":
+		if text == "Metrónomo":
 			middle_buttons.controls[i].on_click = lambda e: open_metronome(page)
 
 	bottom_buttons = ft.Column(
@@ -327,6 +504,7 @@ def configure_left_bar_button(page: ft.Page):
 
 	return buttons
 
+
 def configure_left_bar(page: ft.Page):
 	leftbar_buttons = configure_left_bar_button(page)
 
@@ -339,6 +517,7 @@ def configure_left_bar(page: ft.Page):
 
 	return left_bar
 
+
 def configure_main_window(page: ft.Page):
 	global other_page
 
@@ -350,6 +529,7 @@ def configure_main_window(page: ft.Page):
 	], expand=True, spacing=0)
 
 	return main_window, left_bar
+
 
 def configure_application_css(page: ft.Page):
 	main_window, left_bar = configure_main_window(page)

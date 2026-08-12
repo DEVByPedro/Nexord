@@ -10,7 +10,7 @@ def get_imports():
 		import screeninfo
 		import json
 		import socket
-	except Exception:
+	except ModuleNotFoundError:
 		print("Required modules are not installed. Initiallizing installation of the required modules...")
 		print()
 		import subprocess

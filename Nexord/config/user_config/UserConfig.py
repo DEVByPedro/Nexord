@@ -14,7 +14,7 @@ def configure_user_json():
 		"username": os.getenv("username"),
 		"user_icon": "",
 		"current_theme": "dark",
-		"bpm_cap": 300
+		"bpm_cap": 250
 	}
 
 	with open(user_config_path, "w") as user_file:
