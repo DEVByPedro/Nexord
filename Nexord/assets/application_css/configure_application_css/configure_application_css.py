@@ -1,26 +1,31 @@
+import threading
+from time import sleep
+
 import flet as ft
 
 from config.left_bar_config.LeftBarConfig import (swap_left_bar, get_width_from_leftbar_last_state,
                                                   check_leftbar_last_state, get_current_leftbar_state)
-from apps.app_change_theme.app_change_theme import swap_theme, get_current_theme
+from apps.app_change_theme.app_change_theme import swap_theme, get_current_theme, set_theme
 from config.user_config.UserConfig import get_bpm_cap
 
 global other_page
 
 other_page = ft.Container(expand=True)
 
-
 def open_metronome(page):
+
+	global metronome_running
+
 	global other_page
 
-	def verify_tempo(e):
+	def verify_tempo(e, bpm):
 		try:
 			field = e.control
 
 			value = "".join(char for char in field.value if char.isdigit())
 
 			if value == "":
-				field.value = 0
+				field.value = 1
 				field.update()
 
 			if int(value) <= get_bpm_cap():
@@ -29,47 +34,122 @@ def open_metronome(page):
 			if int(value) > get_bpm_cap():
 				field.value = get_bpm_cap()
 
-			MBPS = field.value
-			tempo_mbps_text.value = f"{MBPS} mbps"
-			tempo_mbps_text.update()
+			bpm = field.value
+			tempo_bpm_text.value = f"{bpm} mbps"
+			tempo_bpm_text.update()
 			field.update()
 		except Exception:
 			pass
 
-	def elevate_counting(textfield: ft.TextField):
-		if textfield.value >= 0 and textfield.value <= get_bpm_cap():
+	def elevate_counting(textfield: ft.TextField, bpm):
+		if textfield.value >= 1 and textfield.value <= get_bpm_cap():
 			textfield.value += 1
-			MBPS = textfield.value
-			tempo_mbps_text.value = f"{MBPS} mbps"
-			tempo_mbps_text.update()
+			bpm = textfield.value
+			tempo_bpm_text.value = f"{bpm} BPM"
+			tempo_bpm_text.update()
 
 		textfield.update()
 
-	def remove_counting(textfield: ft.TextField):
-		if textfield.value > 0:
+	def remove_counting(textfield: ft.TextField, bpm):
+		if textfield.value > 1:
 			textfield.value -= 1
-			MBPS = textfield.value
-			tempo_mbps_text.value = f"{MBPS} mbps"
-			tempo_mbps_text.update()
+			bpm = textfield.value
+			tempo_bpm_text.value = f"{bpm} BPM"
+			tempo_bpm_text.update()
 
 		textfield.update()
 
-	MBPS = 0
+	def run_metronome(button, tempos_button, current_tempo, bpm_field):
+		global metronome_running
 
+		while metronome_running:
+
+			bpm = int(bpm_field.value)
+			interval = 60 / bpm
+
+			current_tempo += 1
+
+			if current_tempo > 4:
+				current_tempo = 1
+
+			tempos_button.controls[current_tempo - 1].key = "tempos_active_button"
+
+			if current_tempo > 1:
+				tempos_button.controls[current_tempo - 2].key = "tempos_button"
+			else:
+				tempos_button.controls[3].key = "tempos_button"
+
+			set_theme(page, get_current_theme())
+			page.update()
+
+			print(f"BPM: {bpm} | Intervalo: {interval:.3f}s")
+
+			sleep(interval)
+
+	def start_tempo(button: ft.Button, tempos_button: ft.Row, current_tempo, bpm_field):
+		global metronome_running
+
+		if not metronome_running:
+			metronome_running = True
+			button.text = "Stop Metronome"
+
+			for i in range(tempo):
+				tempos_button.controls[i].key = "tempos_button"
+
+			set_theme(page, get_current_theme())
+			page.update()
+
+			threading.Thread(
+				target=run_metronome,
+				args=(button, tempos_button, current_tempo, bpm_field),
+				daemon=True
+			).start()
+
+		else:
+			metronome_running = False
+			button.text = "Start Metronome"
+			page.update()
+
+	metronome_running = False
+
+	BPM = 1
 	tempos_button = ft.Row(
 		alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
 		tight=True,
 		spacing=10
 	)
-	tempo_mbps_text = ft.Text(f"{MBPS} mbps", size=50)
-	choose_tempo_field = ft.TextField(width=100, value=0, on_change=lambda e: verify_tempo(e))
-	less_button = ft.Button("-", on_click=lambda e: remove_counting(choose_tempo_field))
-	more_button = ft.Button("+", on_click=lambda e: elevate_counting(choose_tempo_field))
+	tempo_bpm_text = ft.Text(f"{BPM} BPM", size=50)
+	choose_tempo_field = ft.TextField(width=100, value=1, on_change=lambda e: verify_tempo(e, BPM))
+	less_button = ft.Button("-",
+	                        on_click=lambda e: remove_counting(choose_tempo_field, BPM),
+	                        height=choose_tempo_field.height,
+							style = ft.ButtonStyle(shape={"": ft.RoundedRectangleBorder(radius=5)})
+	                        )
+	more_button = ft.Button("+",
+	                        on_click=lambda e: elevate_counting(choose_tempo_field, BPM),
+	                        height=choose_tempo_field.height,
+	                        style=ft.ButtonStyle(shape={"": ft.RoundedRectangleBorder(radius=5)})
+	                        )
+	start_tempo_button = ft.Button(
+		"Start Metronome",
+		style=ft.ButtonStyle(
+			shape={"": ft.RoundedRectangleBorder(radius=5)},
+			padding=15
+		),
+		on_click=lambda e: start_tempo(
+			start_tempo_button,
+			tempos_button,
+			current_tempo,
+			choose_tempo_field
+		)
+	)
 
 	tempo = 4
+	current_tempo = 0
 	for i in range(tempo):
 		tempos_button.controls.append(
 			ft.Container(
+				key="tempos_button",
 				bgcolor="green",
 				width=10,
 				height=10,
@@ -88,7 +168,7 @@ def open_metronome(page):
 			ft.Container(
 				content=ft.Column(
 					[
-						tempo_mbps_text,
+						tempo_bpm_text,
 
 						tempos_button,
 
@@ -107,24 +187,23 @@ def open_metronome(page):
 				),
 			),
 
-			ft.Button("Start Metronome"),
+			start_tempo_button,
 			ft.Container()
 		],
+		key="leftbar_buttons",
 		alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
 		horizontal_alignment=ft.CrossAxisAlignment.CENTER,
 		expand=True,
 	)
 
+	set_theme(page, get_current_theme())
 	page.update()
-
 
 def open_tuner():
 	pass
 
-
 def open_escale():
 	pass
-
 
 def get_icon_theme():
 	current_theme = get_current_theme()
@@ -132,12 +211,10 @@ def get_icon_theme():
 		return ft.Icons.DARK_MODE
 	return ft.Icons.LIGHT_MODE
 
-
 def swap_theme_button(page, icon):
 	swap_theme(page)
 	icon.name = get_icon_theme()
 	icon.update()
-
 
 def configure_left_bar_button(page: ft.Page):
 	top_buttons = ft.Column(
@@ -160,7 +237,6 @@ def configure_left_bar_button(page: ft.Page):
 					vertical_alignment=ft.CrossAxisAlignment.CENTER,
 					expand=True,
 				),
-				key="leftbar_text",
 				on_click=lambda e: swap_left_bar(page),
 				style=ft.ButtonStyle(
 					shape={"": ft.RoundedRectangleBorder(radius=5)}
@@ -251,7 +327,6 @@ def configure_left_bar_button(page: ft.Page):
 
 	return buttons
 
-
 def configure_left_bar(page: ft.Page):
 	leftbar_buttons = configure_left_bar_button(page)
 
@@ -264,7 +339,6 @@ def configure_left_bar(page: ft.Page):
 
 	return left_bar
 
-
 def configure_main_window(page: ft.Page):
 	global other_page
 
@@ -276,7 +350,6 @@ def configure_main_window(page: ft.Page):
 	], expand=True, spacing=0)
 
 	return main_window, left_bar
-
 
 def configure_application_css(page: ft.Page):
 	main_window, left_bar = configure_main_window(page)

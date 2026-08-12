@@ -1,3 +1,9 @@
+def save(path, data):
+	import json
+
+	with open(path, "w") as user_file:
+		json.dump(data, user_file, indent=4)
+
 def configure_user_json():
 	import json
 	import os
@@ -30,8 +36,49 @@ def set_user_current_theme(theme):
 
 		user_data["current_theme"] = theme
 
-		with open(user_config_path, "w") as user_file:
-			json.dump(user_data, user_file, indent=4)
+		save(user_config_path, user_data)
+
+def set_user_username(name):
+	import json
+	import os
+
+	user_config_path = "config/user_config/user_json.json"
+
+	if os.path.exists(user_config_path):
+		with open(user_config_path, "r") as user_file:
+			user_data = json.load(user_file)
+
+		user_data["username"] = name
+
+		save(user_config_path, user_data)
+
+def set_user_user_icon(icon_path):
+	import json
+	import os
+
+	user_config_path = "config/user_config/user_json.json"
+
+	if os.path.exists(user_config_path):
+		with open(user_config_path, "r") as user_file:
+			user_data = json.load(user_file)
+
+		user_data["user_icon"] = icon_path
+
+		save(user_config_path, user_data)
+
+def set_bpm_cap(bpm):
+	import json
+	import os
+
+	user_config_path = "config/user_config/user_json.json"
+
+	if os.path.exists(user_config_path):
+		with open(user_config_path, "r") as user_file:
+			user_data = json.load(user_file)
+
+		user_data["bpm_cap"] = bpm
+
+		save(user_config_path, user_data)
 
 def get_user_username():
 	import json

@@ -18,6 +18,7 @@ def set_theme(page, theme):
 		text_color = "#000000"
 		card_color = "#FFFFFF"
 		leftbar_color = "#f0f0f0"
+		tempos_active_button = "#0a8c15"
 		set_user_current_theme("light")
 	elif theme == "dark":
 		page.theme_mode = ft.ThemeMode.DARK
@@ -26,6 +27,7 @@ def set_theme(page, theme):
 		text_color = "#FFFFFF"
 		card_color = "#11151f"
 		leftbar_color = "#181d29"
+		tempos_active_button = "#94a7f7"
 		set_user_current_theme("dark")
 
 	# Atualiza todos os controles da página
@@ -42,6 +44,10 @@ def set_theme(page, theme):
 			control.bgcolor = card_color
 			if control.key == "leftbar":
 				control.bgcolor = leftbar_color
+			if control.key == "tempos_button":
+				control.bgcolor = text_color
+			if control.key == "tempos_active_button":
+				control.bgcolor = tempos_active_button
 
 		elif isinstance(control, ft.Icon):
 			if control.key == "leftbar_button_icon":
