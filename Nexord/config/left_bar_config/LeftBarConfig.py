@@ -87,10 +87,11 @@ def swap_left_bar(page: ft.Page):
 				change_leftbar_state_json()
 
 		if isinstance(control, ft.Text):
-			if get_current_leftbar_state() == True:
-				control.visible = True
-			if get_current_leftbar_state() == False:
-				control.visible = False
+			if control.key == "leftbar_text":
+				if get_current_leftbar_state() == True:
+					control.visible = True
+				if get_current_leftbar_state() == False:
+					control.visible = False
 
 		if hasattr(control, "controls"):
 			for child in control.controls:

@@ -1,7 +1,129 @@
 import flet as ft
 
-from config.left_bar_config.LeftBarConfig import swap_left_bar, get_width_from_leftbar_last_state, check_leftbar_last_state, get_current_leftbar_state
+from config.left_bar_config.LeftBarConfig import (swap_left_bar, get_width_from_leftbar_last_state,
+                                                  check_leftbar_last_state, get_current_leftbar_state)
 from apps.app_change_theme.app_change_theme import swap_theme, get_current_theme
+from config.user_config.UserConfig import get_bpm_cap
+
+global other_page
+
+other_page = ft.Container(expand=True)
+
+
+def open_metronome(page):
+	global other_page
+
+	def verify_tempo(e):
+		try:
+			field = e.control
+
+			value = "".join(char for char in field.value if char.isdigit())
+
+			if value == "":
+				field.value = 0
+				field.update()
+
+			if int(value) <= get_bpm_cap():
+				field.value = int(value)
+
+			if int(value) > get_bpm_cap():
+				field.value = get_bpm_cap()
+
+			MBPS = field.value
+			tempo_mbps_text.value = f"{MBPS} mbps"
+			tempo_mbps_text.update()
+			field.update()
+		except Exception:
+			pass
+
+	def elevate_counting(textfield: ft.TextField):
+		if textfield.value >= 0 and textfield.value <= get_bpm_cap():
+			textfield.value += 1
+			MBPS = textfield.value
+			tempo_mbps_text.value = f"{MBPS} mbps"
+			tempo_mbps_text.update()
+
+		textfield.update()
+
+	def remove_counting(textfield: ft.TextField):
+		if textfield.value > 0:
+			textfield.value -= 1
+			MBPS = textfield.value
+			tempo_mbps_text.value = f"{MBPS} mbps"
+			tempo_mbps_text.update()
+
+		textfield.update()
+
+	MBPS = 0
+
+	tempos_button = ft.Row(
+		alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+		tight=True,
+		spacing=10
+	)
+	tempo_mbps_text = ft.Text(f"{MBPS} mbps", size=50)
+	choose_tempo_field = ft.TextField(width=100, value=0, on_change=lambda e: verify_tempo(e))
+	less_button = ft.Button("-", on_click=lambda e: remove_counting(choose_tempo_field))
+	more_button = ft.Button("+", on_click=lambda e: elevate_counting(choose_tempo_field))
+
+	tempo = 4
+	for i in range(tempo):
+		tempos_button.controls.append(
+			ft.Container(
+				bgcolor="green",
+				width=10,
+				height=10,
+				border_radius=50
+			)
+		)
+
+	other_page.content = ft.Column(
+		[
+			ft.Container(),
+			ft.Text(
+				"Metronome",
+				size=30,
+			),
+
+			ft.Container(
+				content=ft.Column(
+					[
+						tempo_mbps_text,
+
+						tempos_button,
+
+						ft.Row(
+							[
+								less_button,
+								choose_tempo_field,
+								more_button,
+							],
+							alignment=ft.MainAxisAlignment.CENTER,
+						),
+					],
+					spacing=20,
+					horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+					alignment=ft.MainAxisAlignment.CENTER
+				),
+			),
+
+			ft.Button("Start Metronome"),
+			ft.Container()
+		],
+		alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+		horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+		expand=True,
+	)
+
+	page.update()
+
+
+def open_tuner():
+	pass
+
+
+def open_escale():
+	pass
 
 
 def get_icon_theme():
@@ -10,10 +132,12 @@ def get_icon_theme():
 		return ft.Icons.DARK_MODE
 	return ft.Icons.LIGHT_MODE
 
+
 def swap_theme_button(page, icon):
 	swap_theme(page)
 	icon.name = get_icon_theme()
 	icon.update()
+
 
 def configure_left_bar_button(page: ft.Page):
 	top_buttons = ft.Column(
@@ -29,14 +153,15 @@ def configure_left_bar_button(page: ft.Page):
 				content=ft.Row(
 					[
 						ft.Icon(icon, key="leftbar_button_icon"),
-						ft.Text(text),
+						ft.Text(text, key="leftbar_text"),
 					],
 					spacing=10,
 					alignment=ft.MainAxisAlignment.START,
 					vertical_alignment=ft.CrossAxisAlignment.CENTER,
 					expand=True,
 				),
-				on_click = lambda e: swap_left_bar(page),
+				key="leftbar_text",
+				on_click=lambda e: swap_left_bar(page),
 				style=ft.ButtonStyle(
 					shape={"": ft.RoundedRectangleBorder(radius=5)}
 				),
@@ -59,7 +184,7 @@ def configure_left_bar_button(page: ft.Page):
 				content=ft.Row(
 					[
 						ft.Icon(icon, key="leftbar_button_icon"),
-						ft.Text(text),
+						ft.Text(text, key="leftbar_text"),
 					],
 					spacing=10,
 					alignment=ft.MainAxisAlignment.START,
@@ -74,6 +199,9 @@ def configure_left_bar_button(page: ft.Page):
 				),
 			)
 		)
+
+		if text == "Metronomo":
+			middle_buttons.controls[i].on_click = lambda e: open_metronome(page)
 
 	bottom_buttons = ft.Column(
 		spacing=10,
@@ -91,7 +219,7 @@ def configure_left_bar_button(page: ft.Page):
 				content=ft.Row(
 					[
 						ft.Icon(icon, key="leftbar_button_icon"),
-						ft.Text(text),
+						ft.Text(text, key="leftbar_text"),
 					],
 					spacing=10,
 					alignment=ft.MainAxisAlignment.START,
@@ -138,18 +266,14 @@ def configure_left_bar(page: ft.Page):
 
 
 def configure_main_window(page: ft.Page):
+	global other_page
+
 	left_bar = configure_left_bar(page)
 
-	main_window = ft.Row(
-		controls=[
-			left_bar,
-			ft.Container(
-				expand=True,
-			),
-		],
-		expand=True,
-		spacing=0,
-	)
+	main_window = ft.Row([
+		left_bar,
+		other_page,
+	], expand=True, spacing=0)
 
 	return main_window, left_bar
 

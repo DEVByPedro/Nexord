@@ -7,7 +7,8 @@ def configure_user_json():
 	default_user_data = {
 		"username": os.getenv("username"),
 		"user_icon": "",
-		"current_theme": "dark"
+		"current_theme": "dark",
+		"bpm_cap": 300
 	}
 
 	with open(user_config_path, "w") as user_file:
@@ -57,5 +58,19 @@ def get_user_user_icon():
 			user_data = json.load(user_file)
 
 		return user_data["user_icon"]
+	else:
+		return ""
+
+def get_bpm_cap():
+	import json
+	import os
+
+	user_config_path = "config/user_config/user_json.json"
+
+	if os.path.exists(user_config_path):
+		with open(user_config_path, "r") as user_file:
+			user_data = json.load(user_file)
+
+		return user_data["bpm_cap"]
 	else:
 		return ""

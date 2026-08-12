@@ -1,5 +1,6 @@
 {
-	"username": "User",
-	"user_icon": "",
-	"current_theme": "light"
+    "username": "User",
+    "user_icon": "",
+    "current_theme": "light",
+    "bpm_cap": 300
 }
