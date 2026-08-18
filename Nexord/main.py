@@ -1,21 +1,19 @@
-from assets.application_css.configure_application_css.configure_application_css import configure_application_css
-from apps.app_setup_window.app_setup_window import initialize_setup, customize_app, apply_colors
+from config.dependencies.Structure import configure_application
+from apps.app_configure_structure import app_configure_structure as configure_structure
 
-initialize_setup()
+configure_application()
 
 import flet as ft
 
 def main(page: ft.Page):
+	page.window.title = "Nexord"
 
-	# Customization
-	page.title = "Nexord"
-	page.window.icon = "icon.ico"
 	page.padding = 0
 
-	customize_app(page)
-	configure_application_css(page)
-	apply_colors(page)
+	page.window.width = 1000
+	page.window.height = 800
 
-	page.update()
+	configure_structure.configure_application_structure(page)
 
-ft.app(main, assets_dir="assets/src")
+
+ft.run(main)
