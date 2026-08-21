@@ -139,6 +139,7 @@ def open_metronome(page):
 		for i in range(current_tempo):
 			tempos_button.controls.append(
 				ft.Container(
+					key="tempo_button",
 					width=10,
 					height=10,
 					border_radius=50,
@@ -251,11 +252,13 @@ def open_metronome(page):
 
 	more_compass_tempo_choose = ft.Button(
 		"+",
+		key="card_button",
 		style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=5)),
 		on_click=lambda e: increase_compass_tempo_counting(e, textfield_compass_tempo)
 	)
 	less_compass_tempo_choose = ft.Button(
 		"-",
+		key="card_button",
 		style=ft.ButtonStyle(shape={"": ft.RoundedRectangleBorder(radius=5)}),
 		on_click=lambda e: decrease_compass_tempo_counting(e, textfield_compass_tempo)
 	)
@@ -289,12 +292,14 @@ def open_metronome(page):
 	choose_tempo_field = ft.TextField(width=100, value=str(BPM), on_change=lambda e: verify_tempo(e, BPM))
 	less_button = ft.Button(
 		"-",
+		key="card_button",
 		on_click=lambda e: remove_counting(choose_tempo_field, BPM),
 		height=choose_tempo_field.height,
 		style=ft.ButtonStyle(shape={"": ft.RoundedRectangleBorder(radius=5)})
 	)
 	more_button = ft.Button(
 		"+",
+		key="card_button",
 		on_click=lambda e: elevate_counting(choose_tempo_field, BPM),
 		height=choose_tempo_field.height,
 		style=ft.ButtonStyle(shape={"": ft.RoundedRectangleBorder(radius=5)})
@@ -340,70 +345,127 @@ def open_metronome(page):
 		)
 	)
 
-	for i in range(int(textfield_compass_tempo.value)):
-		tempos_button.controls.append(
-			ft.Container(
-				width=10,
-				height=10,
-				border_radius=50
-			)
+	content = ft.Container(
+		expand=True,
+		padding=20,
+		content=ft.Container(
+			ft.Column(
+				[
+					ft.Text(
+						"Metrónomo",
+						size=30,
+					),
+
+					ft.Container(
+						key="card_container",
+						expand=True,
+						alignment=ft.Alignment(0, 0),
+						content=ft.Column(
+							[
+								tempo_bpm_text,
+								tempos_button,
+								tempo_list,
+								tempo_rows,
+							],
+							spacing=20,
+							horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+							alignment=ft.MainAxisAlignment.CENTER,
+							tight=True,
+						),
+					),
+
+					start_tempo_button,
+				],
+				expand=True,
+				horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+			),
+			key="card_container",
+			padding=30,
+			border_radius = 20
+
 		)
+	)
+
+	set_theme(page, get_current_theme())
+	update_compass_tempo_buttons(int(textfield_compass_tempo.value))
+
+	return content
+
+def open_afinador(page):
+
+	title = ft.Text(
+		"Afinador",
+		size=30,
+	)
+
+	mic_button = ft.Button(
+		ft.Row(
+			[
+				ft.Icon(ft.Icons.MIC),
+				ft.Text("Configurar Microfone")
+			],
+			alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+		),
+		style=ft.ButtonStyle(
+			mouse_cursor = ft.MouseCursor.CLICK,
+			shape=ft.RoundedRectangleBorder(radius=5)
+		)
+	)
+
+	header_row_container = ft.Container(
+
+		ft.Column(
+			[
+				ft.Row(
+					[
+						title,
+						mic_button
+					],
+					alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+				),
+			],
+
+		),
+		key="card_container",
+		padding=20,
+		border_radius=20,
+	)
 
 	content = ft.Container(
 		expand=True,
 		padding=20,
 		content=ft.Column(
 			[
-				ft.Text(
-					"Metrónomo",
-					size=30,
-				),
-
+				header_row_container,
 				ft.Container(
 					expand=True,
-					alignment=ft.Alignment(0, 0),
+					border_radius=20,
+					bgcolor="white",
+					alignment=ft.Alignment.CENTER,
 					content=ft.Column(
-						[
-							tempo_bpm_text,
-							tempos_button,
-							tempo_list,
-							tempo_rows,
-						],
-						spacing=20,
 						horizontal_alignment=ft.CrossAxisAlignment.CENTER,
 						alignment=ft.MainAxisAlignment.CENTER,
-						tight=True,
+						controls=[
+							ft.Icon(
+								ft.Icons.MIC,
+								size=60,
+								color=ft.Colors.BLUE_400,
+							),
+
+							ft.Text(
+								"Aguardando áudio...",
+								size=20,
+							),
+						],
 					),
 				),
-
-				start_tempo_button,
 			],
 			expand=True,
 			horizontal_alignment=ft.CrossAxisAlignment.CENTER,
 		),
 	)
-
-	set_theme(page, get_current_theme())
-	update_compass_tempo_buttons(int(textfield_compass_tempo.value))
-	page.update()
 
 	return content
-
-def open_afinador(page):
-	return ft.Container(
-		expand=True,
-		padding=20,
-		content=ft.Column(
-			[
-				ft.Text(
-					"Afinador",
-					size=30,
-				)
-			],
-			expand=True,
-			horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-		),
-	)
 
 def open_scales(page):
 	return ft.Container(
@@ -478,8 +540,6 @@ def configure_window(page: ft.Page):
 				else:
 					button.key = ""
 				set_theme(page, get_current_theme())
-
-
 
 		def change_route(route):
 			global rota_atual
@@ -678,6 +738,10 @@ def configure_window(page: ft.Page):
 						duration=300,
 						curve=ft.AnimationCurve.FAST_OUT_SLOWIN
 					)
+				),
+				ft.VerticalDivider(
+					width=1,
+					thickness=1,
 				),
 				other_page
 			],

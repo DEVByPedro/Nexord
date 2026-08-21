@@ -22,25 +22,31 @@ def get_current_textcolor(theme):
 def set_theme(page, theme):
 	if theme == "light":
 		page.theme_mode = ft.ThemeMode.LIGHT
-		page.bgcolor = "#fafafa"
-		button_color = "#ffffff"
-		button_hover_color = "#f0f0f0"
-		text_color = "#1a1a1a"
-		card_color = "#ffffff"
-		leftbar_color = "#f5f5f5"
-		tempos_active_button = "#16a34a"
-		tempos_active_button_hover = "#15803d"
+		page.bgcolor = "#F7F9FC"
+		tempo_button = "#1a1a1a"
+		button_color = "#FFFFFF"
+		button_hover_color = "#EEF2F7"
+		button_card_color = "#D9E2F0"
+		text_color = "#172033"
+		card_color = "#FFFFFF"
+		container_color = "#E8EDF5"
+		leftbar_color = "#F1F4F8"
+		tempos_active_button = "#22C55E"
+		tempos_active_button_hover = "#16A34A"
 		set_user_current_theme("light")
 	elif theme == "dark":
 		page.theme_mode = ft.ThemeMode.DARK
-		page.bgcolor = "#0d1117"
-		button_color = "#161b22"
-		button_hover_color = "#21262d"
-		text_color = "#e6e6e6"
-		card_color = "#161b22"
-		leftbar_color = "#0d1117"
-		tempos_active_button = "#818cf8"
-		tempos_active_button_hover = "#6366f1"
+		page.bgcolor = "#0B0F14"
+		tempo_button = "#e6e6e6"
+		button_color = "#151B23"
+		button_hover_color = "#202832"
+		button_card_color = "#303B4D"
+		text_color = "#E6EDF3"
+		card_color = "#151B23"
+		container_color = "#1C2530"
+		leftbar_color = "#0F141A"
+		tempos_active_button = "#818CF8"
+		tempos_active_button_hover = "#6366F1"
 		set_user_current_theme("dark")
 
 	# Atualiza todos os controles da página
@@ -49,12 +55,19 @@ def set_theme(page, theme):
 		if isinstance(control, ft.Button):
 			control.bgcolor = button_color
 			control.color = text_color
+			control.style.mouse_cursor = ft.MouseCursor.CLICK
 
 			if control.key == "hovered_button":
 				control.bgcolor = button_hover_color
 
+			if control.key == "card_button":
+				control.bgcolor = button_card_color
+
 		elif isinstance(control, ft.Text):
 			control.color = text_color
+
+		elif isinstance(control, ft.VerticalDivider):
+			control.color = button_hover_color
 
 		elif isinstance(control, ft.Container):
 			control.bgcolor = card_color
@@ -62,6 +75,10 @@ def set_theme(page, theme):
 				control.bgcolor = leftbar_color
 			if control.key == "tempos_active_button":
 				control.bgcolor = tempos_active_button
+			if control.key == "card_container":
+				control.bgcolor=container_color
+			if control.key == "tempo_button":
+				control.bgcolor = tempo_button
 
 		elif isinstance(control, ft.Icon):
 			if control.key == "leftbar_button_icon":
