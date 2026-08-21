@@ -11,6 +11,7 @@ from config.user.user_preferences.UserConfig import get_bpm_cap
 
 other_page = ft.Container(expand=True)
 metronome_running = False
+rota_atual = "metronomo"
 
 # ARRUMAR OS TEMPO_BUTTON E O BOTÂO DE INICIAR TEMPO
 def open_metronome(page):
@@ -348,35 +349,93 @@ def open_metronome(page):
 			)
 		)
 
-	other_page.content = ft.Column(
-		[
-			ft.Container(),
-			ft.Text("Metrónomo", size=30),
-			ft.Container(
-				content=ft.Column(
-					[
-						tempo_bpm_text,
-						tempos_button,
-						tempo_list,
-						tempo_rows,
-					],
-					spacing=20,
-					horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-					alignment=ft.MainAxisAlignment.CENTER
-				),
-			),
-			start_tempo_button,
-			ft.Container()
-		],
-		key="leftbar_buttons",
-		alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-		horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+	content = ft.Container(
 		expand=True,
+		padding=20,
+		content=ft.Column(
+			[
+				ft.Text(
+					"Metrónomo",
+					size=30,
+				),
+
+				ft.Container(
+					expand=True,
+					alignment=ft.Alignment(0, 0),
+					content=ft.Column(
+						[
+							tempo_bpm_text,
+							tempos_button,
+							tempo_list,
+							tempo_rows,
+						],
+						spacing=20,
+						horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+						alignment=ft.MainAxisAlignment.CENTER,
+						tight=True,
+					),
+				),
+
+				start_tempo_button,
+			],
+			expand=True,
+			horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+		),
 	)
 
 	set_theme(page, get_current_theme())
 	update_compass_tempo_buttons(int(textfield_compass_tempo.value))
 	page.update()
+
+	return content
+
+def open_afinador(page):
+	return ft.Container(
+		expand=True,
+		padding=20,
+		content=ft.Column(
+			[
+				ft.Text(
+					"Afinador",
+					size=30,
+				)
+			],
+			expand=True,
+			horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+		),
+	)
+
+def open_scales(page):
+	return ft.Container(
+		expand=True,
+		padding=20,
+		content=ft.Column(
+			[
+				ft.Text(
+					"Minhas Escalas",
+					size=30,
+				)
+			],
+			expand=True,
+			horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+		),
+	)
+
+def open_musics(page):
+	return ft.Container(
+		expand=True,
+		padding=20,
+		content=ft.Column(
+			[
+				ft.Text(
+					"Minhas Músicas",
+					size=30,
+				)
+			],
+			expand=True,
+			horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+		),
+	)
 
 def configure_window(page: ft.Page):
 	def configure_leftbar_content(leftbar):
@@ -405,6 +464,54 @@ def configure_window(page: ft.Page):
 		page.update()
 
 	def leftbar_content():
+		global rota_atual
+
+		def update_clicked_button(e, route):
+			buttons = content.controls[1]
+
+			change_route(route)
+
+			for button in buttons.controls:
+				button_text=button.content.controls[1].value.lower()
+				if button_text == route:
+					button.key = "hovered_button"
+				else:
+					button.key = ""
+				set_theme(page, get_current_theme())
+
+
+
+		def change_route(route):
+			global rota_atual
+
+			if route == "metrónomo":
+				route = "metronomo"
+
+			if route not in views:
+				return
+
+			rota_atual = route
+			switcher.content = views[route](page)
+			switcher.update()
+
+		views = {
+			"afinador": open_afinador,
+			"metronomo": open_metronome,
+			"escalas": open_scales,
+			"musicas": open_musics
+		}
+
+		switcher = ft.AnimatedSwitcher(
+			content=views[rota_atual](page),
+			transition=ft.AnimatedSwitcherTransition.FADE,
+			duration=250,
+			reverse_duration=180,
+			switch_in_curve=ft.AnimationCurve.EASE_OUT,
+			switch_out_curve=ft.AnimationCurve.EASE_IN,
+			expand=True,
+
+		)
+
 		content = ft.Column(
 			[
 				# Top Buttons
@@ -448,6 +555,7 @@ def configure_window(page: ft.Page):
 								padding=5,
 								mouse_cursor=ft.MouseCursor.CLICK,
 							),
+							on_click=lambda e, button="afinador": update_clicked_button(e, button)
 						),
 						metronomo := ft.Button(
 							ft.Row(
@@ -463,13 +571,13 @@ def configure_window(page: ft.Page):
 								padding=5,
 								mouse_cursor=ft.MouseCursor.CLICK,
 							),
-							on_click=lambda e: open_metronome(page)
+							on_click=lambda e, button="metrónomo": update_clicked_button(e, button)
 						),
 						escalas := ft.Button(
 							ft.Row(
 								[
 									ft.Icon(ft.Icons.MUSIC_NOTE, key="leftbar_button_icon"),
-									ft.Text("Escala", visible=False)
+									ft.Text("Escalas", visible=False)
 								],
 								alignment=ft.MainAxisAlignment.START,
 								vertical_alignment=ft.CrossAxisAlignment.CENTER,
@@ -479,6 +587,7 @@ def configure_window(page: ft.Page):
 								padding=5,
 								mouse_cursor=ft.MouseCursor.CLICK,
 							),
+							on_click=lambda e, button="escalas": update_clicked_button(e, button)
 						),
 						musicas := ft.Button(
 							ft.Row(
@@ -493,6 +602,7 @@ def configure_window(page: ft.Page):
 								shape=ft.RoundedRectangleBorder(radius=5),
 								padding=5
 							),
+							on_click=lambda e, button="musicas": update_clicked_button(e, button)
 						)
 					],
 					horizontal_alignment=ft.CrossAxisAlignment.STRETCH
@@ -543,6 +653,8 @@ def configure_window(page: ft.Page):
 			alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
 			expand=True
 		)
+
+		other_page.content = switcher
 
 		return content
 

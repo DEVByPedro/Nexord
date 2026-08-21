@@ -1,12 +1,14 @@
 from config.dependencies.Structure import configure_application
-from apps.app_configure_structure import app_configure_structure as configure_structure
 
 configure_application()
+
+from apps.app_configure_structure import app_configure_structure as configure_structure
 
 import flet as ft
 
 def main(page: ft.Page):
-	page.window.title = "Nexord"
+
+	page.title = "Nexord"
 
 	page.padding = 0
 
