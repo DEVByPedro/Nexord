@@ -18,6 +18,8 @@ def create_user_json():
 			"bpm_cap": 250
 		}
 
+		os.makedirs(os.path.dirname(path), exist_ok=True)
+
 		with open(path, "w") as user_file:
 			json.dump(json_data_default, user_file, indent=4)
 
