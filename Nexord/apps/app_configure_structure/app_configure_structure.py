@@ -13,7 +13,6 @@ other_page = ft.Container(expand=True)
 metronome_running = False
 rota_atual = "metronomo"
 
-# ARRUMAR OS TEMPO_BUTTON E O BOTÂO DE INICIAR TEMPO
 def open_metronome(page):
 	global metronome_running
 	global other_page
@@ -137,12 +136,17 @@ def open_metronome(page):
 		tempos_button.controls.clear()
 
 		for i in range(current_tempo):
+			# tempos_button.controls.append(
+			# 	ft.Container(
+			# 		width=10,
+			# 		height=10,
+			# 		border_radius=50,
+			# 	)
+			# )
+
 			tempos_button.controls.append(
-				ft.Container(
-					key="tempo_button",
-					width=10,
-					height=10,
-					border_radius=50,
+				ft.CircleAvatar(
+					radius=5,
 				)
 			)
 
@@ -386,7 +390,6 @@ def open_metronome(page):
 		)
 	)
 
-	set_theme(page, get_current_theme())
 	update_compass_tempo_buttons(int(textfield_compass_tempo.value))
 
 	return content
@@ -715,6 +718,8 @@ def configure_window(page: ft.Page):
 		)
 
 		other_page.content = switcher
+
+		set_theme(page, get_current_theme())
 
 		return content
 

@@ -66,6 +66,9 @@ def set_theme(page, theme):
 		elif isinstance(control, ft.Text):
 			control.color = text_color
 
+		elif isinstance(control, ft.CircleAvatar):
+			control.bgcolor = get_current_textcolor(theme)
+
 		elif isinstance(control, ft.VerticalDivider):
 			control.color = button_hover_color
 
