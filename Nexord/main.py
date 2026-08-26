@@ -1,10 +1,12 @@
-from config.dependencies.Structure import configure_application
+from config.dependencies.Structure import install_dependencies, configure_application
 
+install_dependencies()
 configure_application()
 
 from apps.app_configure_structure import app_configure_structure as configure_structure
 
 import flet as ft
+
 
 def main(page: ft.Page):
 

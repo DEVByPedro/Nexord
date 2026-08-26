@@ -1,14 +1,14 @@
-from config.user.user_preferences.UserConfig import create_user_json
-
-import subprocess
-import sys
-
 def install_dependencies():
+
+	import subprocess
+	import sys
+
 	try:
 		import flet
 		import sounddevice as sd
 		import numpy as np
 		import screeninfo
+		import pycaw
 	except 	ModuleNotFoundError:
 		print()
 		print("Installing modules...")
@@ -17,11 +17,17 @@ def install_dependencies():
 		subprocess.check_call([sys.executable, "-m", "pip", "install", "sounddevice"])
 		subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy"])
 		subprocess.check_call([sys.executable, "-m", "pip", "install", "screeninfo"])
+		subprocess.check_call([sys.executable, "-m", "pip", "install", "pycaw"])
 		print()
 		print("Required modules are installed successfully.")
 		print()
 
-
 def configure_application():
-	install_dependencies()
+
+	from config.leftbar.LeftBarConfig import configure_leftbar_json
+	from config.user.microphone.MicrophoneSettings import create_microphones_json
+	from config.user.user_preferences.UserConfig import create_user_json
+
 	create_user_json()
+	create_microphones_json()
+	configure_leftbar_json()

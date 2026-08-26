@@ -43,7 +43,7 @@ def set_theme(page, theme):
 		button_card_color = "#303B4D"
 		text_color = "#E6EDF3"
 		card_color = "#151B23"
-		container_color = "#1C2530"
+		container_color = "#1d2333"
 		leftbar_color = "#0F141A"
 		tempos_active_button = "#818CF8"
 		tempos_active_button_hover = "#6366F1"
@@ -52,10 +52,20 @@ def set_theme(page, theme):
 	# Atualiza todos os controles da página
 
 	def update_control(control):
+
+		if control is None:
+			return
+
+			# =========================
+			# CONTROLE ATUAL
+			# =========================
+
 		if isinstance(control, ft.Button):
 			control.bgcolor = button_color
 			control.color = text_color
-			control.style.mouse_cursor = ft.MouseCursor.CLICK
+
+			if control.style:
+				control.style.mouse_cursor = ft.MouseCursor.CLICK
 
 			if control.key == "hovered_button":
 				control.bgcolor = button_hover_color
@@ -74,26 +84,64 @@ def set_theme(page, theme):
 
 		elif isinstance(control, ft.Container):
 			control.bgcolor = card_color
+
 			if control.key == "leftbar":
 				control.bgcolor = leftbar_color
-			if control.key == "tempos_active_button":
+
+			elif control.key == "tempos_active_button":
 				control.bgcolor = tempos_active_button
-			if control.key == "card_container":
-				control.bgcolor=container_color
-			if control.key == "tempo_button":
+
+			elif control.key == "card_container":
+				control.bgcolor = container_color
+
+			elif control.key == "card_container_above":
+				control.bgcolor = container_color
+				control.border = ft.Border.all(1, "#444444")
+
+			elif control.key == "tempo_button":
 				control.bgcolor = tempo_button
 
 		elif isinstance(control, ft.Icon):
 			if control.key == "leftbar_button_icon":
 				control.color = text_color
 
-		# Controles filhos
-		if hasattr(control, "controls"):
-			for child in control.controls:
+		elif isinstance(control, ft.AlertDialog):
+			control.bgcolor = card_color
+
+			# =========================
+			# FILHOS
+			# =========================
+
+		controls = getattr(control, "controls", None)
+
+		if isinstance(controls, (list, tuple)):
+			for child in controls:
 				update_control(child)
 
-		if hasattr(control, "content") and control.content:
-			update_control(control.content)
+		# =========================
+		# CONTENT
+		# =========================
+
+		content = getattr(control, "content", None)
+
+		if content is not None:
+			update_control(content)
+
+		# =========================
+		# ALERT DIALOG
+		# =========================
+
+		if isinstance(control, ft.AlertDialog):
+
+			if control.title is not None:
+				update_control(control.title)
+
+			if control.content is not None:
+				update_control(control.content)
+
+			if control.actions:
+				for action in control.actions:
+					update_control(action)
 
 	for control in page.controls:
 		update_control(control)
