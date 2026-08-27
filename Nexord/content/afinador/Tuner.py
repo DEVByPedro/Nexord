@@ -4,7 +4,8 @@ from apps.app_calculate_hertz.app_calculate_hertz import get_gauge, toggle_audio
 import flet as ft
 
 from content.afinador.afinacoes.Afinacoes import get_current_afinacao, get_all_tuning_saved, get_current_tuning_notes, \
-    get_current_tuning_description, set_current_default_tuning, insert_tuning
+    get_current_tuning_description, set_current_default_tuning, insert_tuning, delete_tuning_json, \
+    get_current_default_tuning
 
 running = False
 value_label = ft.Text("0.00 Hz", size=32, weight=ft.FontWeight.BOLD)
@@ -63,10 +64,14 @@ def open_afinador(page):
         frequencia = 440 * (2 ** ((midi - 69) / 12))
         return float(f"{frequencia:.2f}")
 
-    def open_select_tuning(e):
+    def delete_tuning(e, index):
+        index_delete = index - 1
+        delete_tuning_json(index_delete)
+
+        if get_current_default_tuning() >= index:
+            set_current_default_tuning(index)
 
         tuning_list_column.controls.clear()
-
         tuning_list_column.controls.append(new_tuning_button)
 
         for i, afinacao in enumerate(get_all_tuning_saved()):
@@ -81,6 +86,43 @@ def open_afinador(page):
                 )
             )
 
+        page.update()
+
+    def open_select_tuning(e):
+
+        tuning_list_column.controls.clear()
+
+        tuning_list_column.controls.append(new_tuning_button)
+
+        for i, afinacao in enumerate(get_all_tuning_saved()):
+            tuning_list_column.controls.append(
+                ft.Button(
+                    ft.Row(
+                        [
+                            ft.Text(afinacao["afinacao_descricao"]),
+                        ],
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+                    ),
+                    on_click=lambda e, index=i: change_current_tuning(e, index+1),
+                    style=ft.ButtonStyle(
+                        mouse_cursor = ft.MouseCursor.CLICK,
+                        shape=ft.RoundedRectangleBorder(radius=5),
+                    ),
+                )
+            )
+
+        for i, button in enumerate(tuning_list_column.controls):
+            if i > 1:
+                button.content.controls.append(
+                    ft.Button(
+                        ft.Icon(ft.Icons.DELETE),
+                        on_click=lambda e, index=i:delete_tuning(e, index),
+                        style=ft.ButtonStyle(
+                            mouse_cursor = ft.MouseCursor.CLICK,
+                            shape=ft.RoundedRectangleBorder(radius=5),
+                        ),
+                    )
+                )
 
         barrier.visible = True
         dialog_tuning_select.visible = True

@@ -108,3 +108,19 @@ def insert_tuning(description, notes):
     )
 
     save(json_data)
+
+def delete_tuning_json(index):
+    json_data = afinacao_json()
+
+    if index > 0:
+        for tuning in json_data["afinacoes"]:
+            if tuning["index"] == index:
+                json_data["afinacoes"].pop(index)
+
+        if tuning["index"] > index:
+            tuning["index"] -= 1
+
+    save(json_data)
+
+def get_current_default_tuning():
+    return afinacao_json()["afinacao_atual"]
