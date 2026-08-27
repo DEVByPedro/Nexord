@@ -14,10 +14,12 @@ def main(page: ft.Page):
 
 	page.padding = 0
 
+	page.window.icon = "nexord.png"
+
 	page.window.width = 1000
 	page.window.height = 800
 
 	configure_structure.configure_application_structure(page)
 
 
-ft.run(main)
+ft.run(main, assets_dir="src/icon")
