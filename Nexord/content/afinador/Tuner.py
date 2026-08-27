@@ -56,13 +56,35 @@ def open_afinador(page):
             1: 4
         }
 
+        NOTAS_CORDAS = {
+            6: "E",
+            5: "A",
+            4: "D",
+            3: "G",
+            2: "B",
+            1: "E"
+        }
 
-
+        nota_padrao = NOTAS_CORDAS[corda]
         oitava = OITAVAS_CORDAS[corda]
 
-        midi = (oitava + 1) * 12 + NOTAS[nota]
+        midi_padrao = (
+                (oitava + 1) * 12
+                + NOTAS[nota_padrao]
+        )
+
+        semitons = NOTAS[nota] - NOTAS[nota_padrao]
+
+        if semitons > 6:
+            semitons -= 12
+        elif semitons < -6:
+            semitons += 12
+
+        midi = midi_padrao + semitons
+
         frequencia = 440 * (2 ** ((midi - 69) / 12))
-        return float(f"{frequencia:.2f}")
+
+        return round(frequencia, 2)
 
     def delete_tuning(e, index):
         index_delete = index - 1
@@ -312,7 +334,10 @@ def open_afinador(page):
         visible=False,
     )
 
-    buttons_row = ft.Column(horizontal_alignment=ft.CrossAxisAlignment.STRETCH)
+    buttons_row = ft.Column(
+        horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
+        scroll=ft.ScrollMode.AUTO,
+    )
 
     for button in get_saved_microphones()["all_microphones"]:
         buttons_row.controls.append(
@@ -324,13 +349,13 @@ def open_afinador(page):
                 ),
                 expand=True,
                 on_click=lambda e, name=button["name"]: save_default_and_close(name)
-            )
+            ),
         )
 
     dialog = ft.Container(
         key="card_container_above",
         width=400,
-        height=250,
+        height=400,
         bgcolor="#202020",
         border_radius=12,
         padding=20,
