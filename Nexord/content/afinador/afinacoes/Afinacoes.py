@@ -86,8 +86,6 @@ def get_current_tuning_notes_frequency():
 
 def set_current_default_tuning(index):
 
-    print(index)
-
     json_data = afinacao_json()
 
     json_data["afinacao_atual"] = index

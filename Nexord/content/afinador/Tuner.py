@@ -336,7 +336,8 @@ def open_afinador(page):
 
     buttons_row = ft.Column(
         horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
-        scroll=ft.ScrollMode.AUTO,
+        scroll=ft.ScrollMode.ALWAYS,
+        height=200
     )
 
     for button in get_saved_microphones()["all_microphones"]:
