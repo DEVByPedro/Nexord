@@ -1,3 +1,6 @@
+from content.afinador.afinacoes.Afinacoes import create_afinacoes_json
+
+
 def install_dependencies():
 
 	import subprocess
@@ -31,3 +34,4 @@ def configure_application():
 	create_user_json()
 	create_microphones_json()
 	configure_leftbar_json()
+	create_afinacoes_json()

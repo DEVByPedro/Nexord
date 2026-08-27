@@ -1,15 +1,16 @@
-import flet as ft
+import sounddevice as sd
 import flet.canvas as cv
+import numpy as np
+import flet as ft
+import asyncio
 import math
 
+from config.user.microphone.MicrophoneSettings import get_saved_microphones
+from content.afinador.afinacoes.Afinacoes import get_current_tuning_notes_frequency
 
 GAUGE_SIZE = 300
 START_ANGLE = math.pi
 SWEEP_TOTAL = math.pi
-
-import sounddevice as sd
-import numpy as np
-import asyncio
 
 RATE = 44100
 CHUNK = 4096
@@ -72,20 +73,11 @@ def audio_callback(indata, frames, time, status):
 async def update_frequency(frequency_text, note, set_gauge_value, page, gauge):
     while running:
 
-        afinacao = [
-            ("E", 82.41),
-            ("A", 110.00),
-            ("D", 146.83),
-            ("G", 196.00),
-            ("B", 246.94),
-            ("E", 329.63),
-        ]
-
         if current_frequency > 0:
 
             # Encontra a nota mais próxima
             nota_proxima, frequencia_proxima = min(
-                afinacao,
+                get_current_tuning_notes_frequency(),
                 key=lambda x: abs(x[1] - current_frequency)
             )
 
@@ -120,9 +112,28 @@ async def update_frequency(frequency_text, note, set_gauge_value, page, gauge):
 def toggle_audio(e, frequency_text, note, button, page, set_gauge_value, gauge):
     global stream, running
 
+    sd_default_mic_index = None
+
+    saved_mic = get_saved_microphones()["default_microphone"]
+
+    devices = sd.query_devices()
+
+    for i, device in enumerate(devices):
+
+        if device["max_input_channels"] <= 0:
+            continue
+
+        if saved_mic == device["name"]:
+            sd_default_mic_index = i
+            break
+
+        if sd_default_mic_index is not None:
+            break
+
     if not running:
         # Liga
         stream = sd.InputStream(
+            device=sd_default_mic_index,
             samplerate=RATE,
             blocksize=CHUNK,
             channels=1,
@@ -189,9 +200,6 @@ def get_gauge(value_label, value_caption):
         gauge_canvas.update()
         needle.update()
         value_label.update()
-
-    def slider_changed(e):
-        set_value(e)
 
     arc_bg = cv.Arc(
         x=10,
@@ -278,4 +286,4 @@ def get_gauge(value_label, value_caption):
         ]
     )
 
-    return gauge, slider_changed
+    return gauge, set_value

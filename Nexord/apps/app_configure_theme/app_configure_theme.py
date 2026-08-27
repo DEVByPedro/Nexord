@@ -73,6 +73,9 @@ def set_theme(page, theme):
 			if control.key == "card_button":
 				control.bgcolor = button_card_color
 
+			if control.key == "close_button":
+				control.bgcolor = "red"
+
 		elif isinstance(control, ft.Text):
 			control.color = text_color
 
@@ -104,13 +107,6 @@ def set_theme(page, theme):
 		elif isinstance(control, ft.Icon):
 			if control.key == "leftbar_button_icon":
 				control.color = text_color
-
-		elif isinstance(control, ft.AlertDialog):
-			control.bgcolor = card_color
-
-			# =========================
-			# FILHOS
-			# =========================
 
 		controls = getattr(control, "controls", None)
 
