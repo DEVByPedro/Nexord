@@ -21,5 +21,8 @@ def main(page: ft.Page):
 
 	configure_structure.configure_application_structure(page)
 
+	page.window.maximized = True
+	page.update()
+
 
 ft.run(main, assets_dir="src/icon")

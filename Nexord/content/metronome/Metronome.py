@@ -250,13 +250,13 @@ def open_metronome(page):
 
     more_compass_tempo_choose = ft.Button(
         "+",
-        key="card_button",
+        data="card_button",
         style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=5)),
         on_click=lambda e: increase_compass_tempo_counting(e, textfield_compass_tempo)
     )
     less_compass_tempo_choose = ft.Button(
         "-",
-        key="card_button",
+        data="card_button",
         style=ft.ButtonStyle(shape={"": ft.RoundedRectangleBorder(radius=5)}),
         on_click=lambda e: decrease_compass_tempo_counting(e, textfield_compass_tempo)
     )
@@ -290,14 +290,14 @@ def open_metronome(page):
     choose_tempo_field = ft.TextField(width=100, value=str(BPM), on_change=lambda e: verify_tempo(e, BPM))
     less_button = ft.Button(
         "-",
-        key="card_button",
+        data="card_button",
         on_click=lambda e: remove_counting(choose_tempo_field, BPM),
         height=choose_tempo_field.height,
         style=ft.ButtonStyle(shape={"": ft.RoundedRectangleBorder(radius=5)})
     )
     more_button = ft.Button(
         "+",
-        key="card_button",
+        data="card_button",
         on_click=lambda e: elevate_counting(choose_tempo_field, BPM),
         height=choose_tempo_field.height,
         style=ft.ButtonStyle(shape={"": ft.RoundedRectangleBorder(radius=5)})
@@ -355,7 +355,7 @@ def open_metronome(page):
                     ),
 
                     ft.Container(
-                        key="card_container",
+                        data="card_container",
                         expand=True,
                         alignment=ft.Alignment(0, 0),
                         content=ft.Column(
@@ -377,7 +377,7 @@ def open_metronome(page):
                 expand=True,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             ),
-            key="card_container_above",
+            data="card_container_above",
             padding=30,
             border_radius = 20
 

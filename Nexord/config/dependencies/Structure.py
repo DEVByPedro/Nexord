@@ -1,4 +1,5 @@
-from content.afinador.afinacoes.Afinacoes import create_afinacoes_json
+from content.instruments.InstrumentsConfig import create_instruments_json
+from content.tuner.afinacoes.Afinacoes import create_afinacoes_json
 
 
 def install_dependencies():
@@ -35,3 +36,4 @@ def configure_application():
 	create_microphones_json()
 	configure_leftbar_json()
 	create_afinacoes_json()
+	create_instruments_json()

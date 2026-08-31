@@ -15,7 +15,8 @@ def create_user_json():
 			"username": os.getenv("username"),
 			"user_icon": "",
 			"current_theme": "dark",
-			"bpm_cap": 250
+			"bpm_cap": 250,
+			"delete_instrument_confirm": True
 		}
 
 		os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -122,3 +123,18 @@ def get_bpm_cap():
 		return user_data["bpm_cap"]
 	else:
 		return ""
+
+def get_delete_instrument_confirm():
+	with open(path, "r") as user_file:
+		user_data = json.load(user_file)
+
+	return user_data["delete_instrument_confirm"]
+
+def dont_show_again_delete_instrument(e):
+	if os.path.exists(path):
+		with open(path, "r") as user_file:
+			user_data = json.load(user_file)
+
+		user_data["delete_instrument_confirm"] = False
+
+		save(user_data)

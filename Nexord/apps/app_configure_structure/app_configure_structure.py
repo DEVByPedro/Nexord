@@ -3,11 +3,12 @@ import flet as ft
 from apps.app_configure_theme.app_configure_theme import set_theme, get_current_theme, swap_theme
 from config.leftbar.LeftBarConfig import get_current_leftbar_state, configure_leftbar_json
 from config.user.microphone.MicrophoneSettings import create_microphones_json
-from content.afinador.Tuner import open_afinador
+from content.instruments.Instruments import open_instruments
+from content.tuner.Tuner import open_afinador
 from content.metronome.Metronome import open_metronome
 
 other_page = ft.Container(expand=True)
-rota_atual = "afinador"
+rota_atual = "instrumentos"
 
 def open_scales(page):
 	return ft.Container(
@@ -64,7 +65,7 @@ def configure_window(page: ft.Page):
 		leftbar.update()
 
 	def hover_button(e):
-		e.key = "hovered_button"
+		e.data = "hovered_button"
 		page.update()
 
 	def leftbar_content():
@@ -78,9 +79,9 @@ def configure_window(page: ft.Page):
 			for button in buttons.controls:
 				button_text=button.content.controls[1].value.lower()
 				if button_text == route:
-					button.key = "hovered_button"
+					button.data = "hovered_button"
 				else:
-					button.key = ""
+					button.data = ""
 				set_theme(page, get_current_theme())
 
 		def change_route(route):
@@ -99,6 +100,7 @@ def configure_window(page: ft.Page):
 		views = {
 			"afinador": open_afinador,
 			"metronomo": open_metronome,
+			"instrumentos": open_instruments,
 			"escalas": open_scales,
 			"musicas": open_musics
 		}
@@ -122,7 +124,7 @@ def configure_window(page: ft.Page):
 						top_button := ft.Button(
 							ft.Row(
 								[
-									ft.Icon(ft.Icons.MENU, key="leftbar_button_icon"),
+									ft.Icon(ft.Icons.MENU, data="leftbar_button_icon"),
 									ft.Text("Menu", visible=False)
 								],
 								alignment=ft.MainAxisAlignment.START,
@@ -146,7 +148,7 @@ def configure_window(page: ft.Page):
 						afinador := ft.Button(
 							ft.Row(
 								[
-									ft.Icon(ft.Icons.MIC, key="leftbar_button_icon"),
+									ft.Icon(ft.Icons.MIC, data="leftbar_button_icon"),
 									ft.Text("Afinador", visible=False)
 								],
 								alignment=ft.MainAxisAlignment.START,
@@ -162,7 +164,7 @@ def configure_window(page: ft.Page):
 						metronomo := ft.Button(
 							ft.Row(
 								[
-									ft.Icon(ft.Icons.TIMER, key="leftbar_button_icon"),
+									ft.Icon(ft.Icons.TIMER, data="leftbar_button_icon"),
 									ft.Text("Metrónomo", visible=False)
 								],
 								alignment=ft.MainAxisAlignment.START,
@@ -175,10 +177,26 @@ def configure_window(page: ft.Page):
 							),
 							on_click=lambda e, button="metrónomo": update_clicked_button(e, button)
 						),
+						instrumentos := ft.Button(
+							ft.Row(
+								[
+									ft.Icon(ft.Icons.COLLECTIONS_BOOKMARK, data="leftbar_button_icon"),
+									ft.Text("Meus Instrumentos", visible=False)
+								],
+								alignment=ft.MainAxisAlignment.START,
+								vertical_alignment=ft.CrossAxisAlignment.CENTER,
+							),
+							style=ft.ButtonStyle(
+								shape=ft.RoundedRectangleBorder(radius=5),
+								padding=5,
+								mouse_cursor=ft.MouseCursor.CLICK,
+							),
+							on_click=lambda e, button="instrumentos": update_clicked_button(e, button)
+						),
 						escalas := ft.Button(
 							ft.Row(
 								[
-									ft.Icon(ft.Icons.MUSIC_NOTE, key="leftbar_button_icon"),
+									ft.Icon(ft.Icons.MUSIC_NOTE, data="leftbar_button_icon"),
 									ft.Text("Escalas", visible=False)
 								],
 								alignment=ft.MainAxisAlignment.START,
@@ -216,7 +234,7 @@ def configure_window(page: ft.Page):
 						tema := ft.Button(
 							ft.Row(
 								[
-									ft.Icon(ft.Icons.DARK_MODE, key="leftbar_button_icon"),
+									ft.Icon(ft.Icons.DARK_MODE, data="leftbar_button_icon"),
 									ft.Text("Mudar Tema", visible=False)
 								],
 								alignment=ft.MainAxisAlignment.START,
@@ -274,7 +292,7 @@ def configure_window(page: ft.Page):
 		ft.Row(
 			[
 				leftbar := ft.Container(
-					key="leftbar",
+					data="leftbar",
 					content=leftbar_content(),
 					padding=10,
 					width=50,

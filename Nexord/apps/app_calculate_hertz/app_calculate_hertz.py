@@ -6,7 +6,7 @@ import asyncio
 import math
 
 from config.user.microphone.MicrophoneSettings import get_saved_microphones
-from content.afinador.afinacoes.Afinacoes import get_current_tuning_notes_frequency
+from content.tuner.afinacoes.Afinacoes import get_current_tuning_notes_frequency
 
 GAUGE_SIZE = 300
 START_ANGLE = math.pi
@@ -70,7 +70,7 @@ def audio_callback(indata, frames, time, status):
 
     current_frequency = RATE / lag
 
-async def update_frequency(frequency_text, note, set_gauge_value, page, gauge):
+async def update_frequency(frequency_text, note, value_expected, set_gauge_value, page, gauge):
     while running:
 
         if current_frequency > 0:
@@ -104,12 +104,13 @@ async def update_frequency(frequency_text, note, set_gauge_value, page, gauge):
             note.value = nota_proxima
 
             frequency_text.value = f"{current_frequency:.2f} Hz"
+            value_expected.value = f"{frequencia_proxima:.2f} Hz"
 
         page.update()
 
         await asyncio.sleep(0.05)
 
-def toggle_audio(e, frequency_text, note, button, page, set_gauge_value, gauge):
+def toggle_audio(e, frequency_text, note, value_expected, button, page, set_gauge_value, gauge):
     global stream, running
 
     sd_default_mic_index = None
@@ -145,7 +146,7 @@ def toggle_audio(e, frequency_text, note, button, page, set_gauge_value, gauge):
 
         button.content = "Para Afinador"
 
-        page.run_task(update_frequency, frequency_text, note, set_gauge_value, page, gauge)
+        page.run_task(update_frequency, frequency_text, note, value_expected, set_gauge_value, page, gauge)
 
     else:
         # Desliga
@@ -160,7 +161,7 @@ def toggle_audio(e, frequency_text, note, button, page, set_gauge_value, gauge):
 
     page.update()
 
-def get_gauge(value_label, value_caption):
+def get_gauge(value_label, value_caption, value_expected):
 
     global current_frequency
 
@@ -267,7 +268,7 @@ def get_gauge(value_label, value_caption):
                     tight=True,
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     spacing=0,
-                    controls=[value_caption, value_label]
+                    controls=[value_caption, value_expected, value_label]
                 ),
             ),
             ft.Container(

@@ -22,17 +22,19 @@ def get_current_textcolor(theme):
 def set_theme(page, theme):
 	if theme == "light":
 		page.theme_mode = ft.ThemeMode.LIGHT
-		page.bgcolor = "#F7F9FC"
+		page.bgcolor = "#E8EDF5"
 		tempo_button = "#1a1a1a"
 		button_color = "#FFFFFF"
 		button_hover_color = "#EEF2F7"
 		button_card_color = "#D9E2F0"
 		text_color = "#172033"
 		card_color = "#FFFFFF"
-		container_color = "#E8EDF5"
+		container_color = "#F7F9FC"
 		leftbar_color = "#F1F4F8"
 		tempos_active_button = "#22C55E"
 		tempos_active_button_hover = "#16A34A"
+		color_border_textfield = "#000000"
+		color_border_textfield_wrong = "#f52a48"
 		set_user_current_theme("light")
 	elif theme == "dark":
 		page.theme_mode = ft.ThemeMode.DARK
@@ -47,6 +49,8 @@ def set_theme(page, theme):
 		leftbar_color = "#0F141A"
 		tempos_active_button = "#818CF8"
 		tempos_active_button_hover = "#6366F1"
+		color_border_textfield = "#ffffff"
+		color_border_textfield_wrong = "#f52a48"
 		set_user_current_theme("dark")
 
 	# Atualiza todos os controles da página
@@ -67,13 +71,13 @@ def set_theme(page, theme):
 			if control.style:
 				control.style.mouse_cursor = ft.MouseCursor.CLICK
 
-			if control.key == "hovered_button":
+			if control.data == "hovered_button":
 				control.bgcolor = button_hover_color
 
-			if control.key == "card_button":
+			if control.data == "card_button":
 				control.bgcolor = button_card_color
 
-			if control.key == "close_button":
+			if control.data == "close_button":
 				control.bgcolor = "red"
 
 		elif isinstance(control, ft.Text):
@@ -88,24 +92,36 @@ def set_theme(page, theme):
 		elif isinstance(control, ft.Container):
 			control.bgcolor = card_color
 
-			if control.key == "leftbar":
+			if control.data == "leftbar":
 				control.bgcolor = leftbar_color
 
-			elif control.key == "tempos_active_button":
+			elif control.data == "tempos_active_button":
 				control.bgcolor = tempos_active_button
 
-			elif control.key == "card_container":
+			elif control.data == "card_container":
 				control.bgcolor = container_color
 
-			elif control.key == "card_container_above":
+			elif control.data == "card_container_above":
 				control.bgcolor = container_color
 				control.border = ft.Border.all(1, "#444444")
 
-			elif control.key == "tempo_button":
+			elif control.data == "tempo_button":
 				control.bgcolor = tempo_button
 
+		elif isinstance(control, ft.TextField):
+			control.label_style = ft.TextStyle(color=color_border_textfield)
+			control.border_color = color_border_textfield
+			control.focused_border_color = color_border_textfield
+			control.cursor_color = color_border_textfield
+
+			if control.data == "field_wrong":
+				control.label_style = ft.TextStyle(color=color_border_textfield_wrong)
+				control.border_color = color_border_textfield_wrong
+				control.focused_border_color = color_border_textfield_wrong
+				control.cursor_color = color_border_textfield_wrong
+
 		elif isinstance(control, ft.Icon):
-			if control.key == "leftbar_button_icon":
+			if control.data == "leftbar_button_icon":
 				control.color = text_color
 
 		controls = getattr(control, "controls", None)

@@ -75,7 +75,7 @@ def swap_left_bar(page: ft.Page):
     def update_control(control):
 
         if isinstance(control, ft.Container):
-            if control.key == "leftbar":
+            if control.data == "leftbar":
 
                 if get_current_leftbar_state() == True:
                     control.width = page.window.width * 0.05
@@ -89,7 +89,7 @@ def swap_left_bar(page: ft.Page):
                 change_leftbar_state_json()
 
         if isinstance(control, ft.Text):
-            if control.key == "leftbar_text":
+            if control.data == "leftbar_text":
                 if get_current_leftbar_state() == True:
                     control.visible = True
                 else:
