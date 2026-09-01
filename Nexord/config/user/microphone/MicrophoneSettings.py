@@ -44,6 +44,8 @@ def get_microphones():
     elif platform.system() == "Linux":
         return get_microphones_linux()
 
+    platform.system()
+
     return []
 
 def get_microphones_windows():
@@ -84,19 +86,10 @@ def get_microphones_linux():
         line = line.strip()
 
         if line.startswith("Name:") or line.startswith("Nome:"):
-            current_id = line.split(":", 1)[1].strip()
-
-        elif line.startswith("Description:") or line.startswith("Descrição:"):
-            current_name = line.split(":", 1)[1].strip()
-
-        elif line.startswith("media.class"):
-            current_media_class = line.split("=", 1)[1].strip().strip('"')
-
-        elif line.startswith("State:") or line.startswith("Estado:"):
 
             if (
-                    current_id
-                    and current_name
+                    current_id is not None
+                    and current_name is not None
                     and current_media_class == "Audio/Source"
             ):
                 microphones.append({
@@ -105,9 +98,26 @@ def get_microphones_linux():
                     "name": current_name
                 })
 
-            current_id = None
+            current_id = line.split(":", 1)[1].strip()
             current_name = None
             current_media_class = None
+
+        elif line.startswith("Description:") or line.startswith("Descrição:"):
+            current_name = line.split(":", 1)[1].strip()
+
+        elif line.startswith("media.class"):
+            current_media_class = line.split("=", 1)[1].strip().strip('"')
+
+    if (
+            current_id is not None
+            and current_name is not None
+            and current_media_class == "Audio/Source"
+    ):
+        microphones.append({
+            "index": len(microphones) + 1,
+            "id": current_id,
+            "name": current_name
+        })
 
     return microphones
 

@@ -32,6 +32,7 @@ def set_theme(page, theme):
 		container_color = "#F7F9FC"
 		leftbar_color = "#F1F4F8"
 		tempos_active_button = "#22C55E"
+		textfield_bgcolor = "#e1e9f5"
 		tempos_active_button_hover = "#16A34A"
 		color_border_textfield = "#000000"
 		color_border_textfield_wrong = "#f52a48"
@@ -47,6 +48,7 @@ def set_theme(page, theme):
 		card_color = "#151B23"
 		container_color = "#1d2333"
 		leftbar_color = "#0F141A"
+		textfield_bgcolor = "#202633"
 		tempos_active_button = "#818CF8"
 		tempos_active_button_hover = "#6366F1"
 		color_border_textfield = "#ffffff"
@@ -117,6 +119,7 @@ def set_theme(page, theme):
 			control.border_color = color_border_textfield
 			control.focused_border_color = color_border_textfield
 			control.cursor_color = color_border_textfield
+			control.bgcolor = textfield_bgcolor
 
 			if control.data == "field_wrong":
 				control.label_style = ft.TextStyle(color=color_border_textfield_wrong)

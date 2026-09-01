@@ -339,7 +339,13 @@ def open_afinador(page):
                 ),
 
                 ft.Text("Escolha uma das opções de afinação listada abaixo:"),
-                tuning_list_column,
+                ft.Column(
+                    [
+                        tuning_list_column
+                    ],
+                    horizontal_alignment=ft.CrossAxisAlignment.START,
+                    alignment=ft.MainAxisAlignment.START
+                ),
             ],
             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
             spacing=30
@@ -409,9 +415,6 @@ def open_afinador(page):
                                 border_radius=7,
                                 border_width=1,
                                 filled=True,
-                                bgcolor="#1A202D",
-                                border_color="#3B4353",
-                                focused_border_color="#65748A",
                                 content_padding=ft.Padding.symmetric(
                                     horizontal=12,
                                     vertical=8,
@@ -469,9 +472,6 @@ def open_afinador(page):
                                         hint_text="Ex: B",
                                         border_radius=6,
                                         filled=True,
-                                        bgcolor="#202633",
-                                        border_color="#353E4F",
-                                        focused_border_color="#65748A",
                                         content_padding=ft.Padding.symmetric(
                                             horizontal=10,
                                             vertical=7,
@@ -499,9 +499,6 @@ def open_afinador(page):
                                         hint_text="Ex: F#",
                                         border_radius=6,
                                         filled=True,
-                                        bgcolor="#202633",
-                                        border_color="#353E4F",
-                                        focused_border_color="#65748A",
                                         content_padding=ft.Padding.symmetric(
                                             horizontal=10,
                                             vertical=7,
@@ -529,9 +526,6 @@ def open_afinador(page):
                                         hint_text="Ex: B",
                                         border_radius=6,
                                         filled=True,
-                                        bgcolor="#202633",
-                                        border_color="#353E4F",
-                                        focused_border_color="#65748A",
                                         content_padding=ft.Padding.symmetric(
                                             horizontal=10,
                                             vertical=7,
@@ -559,9 +553,6 @@ def open_afinador(page):
                                         hint_text="Ex: E",
                                         border_radius=6,
                                         filled=True,
-                                        bgcolor="#202633",
-                                        border_color="#353E4F",
-                                        focused_border_color="#65748A",
                                         content_padding=ft.Padding.symmetric(
                                             horizontal=10,
                                             vertical=7,
@@ -589,9 +580,6 @@ def open_afinador(page):
                                         hint_text="Ex: B",
                                         border_radius=6,
                                         filled=True,
-                                        bgcolor="#202633",
-                                        border_color="#353E4F",
-                                        focused_border_color="#65748A",
                                         content_padding=ft.Padding.symmetric(
                                             horizontal=10,
                                             vertical=7,
@@ -619,9 +607,6 @@ def open_afinador(page):
                                         hint_text="Ex: E",
                                         border_radius=6,
                                         filled=True,
-                                        bgcolor="#202633",
-                                        border_color="#353E4F",
-                                        focused_border_color="#65748A",
                                         content_padding=ft.Padding.symmetric(
                                             horizontal=10,
                                             vertical=7,
