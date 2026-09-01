@@ -835,7 +835,8 @@ def open_afinador(page):
         ft.Text("Ligar Afinador"),
         style=ft.ButtonStyle(
             mouse_cursor = ft.MouseCursor.CLICK,
-            shape=ft.RoundedRectangleBorder(radius=5)
+            shape=ft.RoundedRectangleBorder(radius=10),
+            padding=20
         ),
         on_click=lambda e: set_value(e)
     )

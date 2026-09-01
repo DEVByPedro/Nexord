@@ -85,10 +85,14 @@ def open_instruments(page: ft.Page):
 
                     ft.Row(
                         [
-                            ft.Button(
+                            confirm_button_delete_instrument := ft.Button(
                                 "Sim, tenho certeza",
                                 data="card_button",
-                                on_click=lambda e: delete(index)
+                                on_click=lambda e: delete(index),
+                                style=ft.ButtonStyle(
+                                    shape=ft.RoundedRectangleBorder(radius=5),
+                                    mouse_cursor=ft.MouseCursor.CLICK
+                                )
                             )
                         ],
                         spacing=10,
@@ -157,9 +161,6 @@ def open_instruments(page: ft.Page):
 
     def unfavorite_instrument(e, index):
         unfavorite_instrument_json(index)
-
-    def hover_container(e):
-        page.update()
 
     def edit_instrument(e, index):
 
@@ -270,6 +271,8 @@ def open_instruments(page: ft.Page):
             spacing=30,
         )
 
+        set_theme(page, get_current_theme())
+
         open_dialog(e, insert_instrument_dialog_edit)
 
     def load_instruments(e):
@@ -350,9 +353,8 @@ def open_instruments(page: ft.Page):
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                         ),
                         padding=20,
-                        data="card_container_above",
+                        data=f"card_container_above_{i}",
                         border_radius=10,
-                        on_hover=lambda e: hover_container(e)
                     )
                 )
 

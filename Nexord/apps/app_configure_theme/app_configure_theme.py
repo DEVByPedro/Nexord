@@ -101,6 +101,10 @@ def set_theme(page, theme):
 			elif control.data == "card_container":
 				control.bgcolor = container_color
 
+			elif control.data and control.data.startswith("card_container_above"):
+				control.bgcolor = container_color
+				control.border = ft.Border.all(1, "#444444")
+
 			elif control.data == "card_container_above":
 				control.bgcolor = container_color
 				control.border = ft.Border.all(1, "#444444")
