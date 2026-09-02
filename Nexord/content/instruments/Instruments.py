@@ -10,15 +10,16 @@ from content.instruments.InstrumentsConfig import get_all_instruments, insert_ne
 
 def open_instruments(page: ft.Page):
 
-    def favorite_instrument_function(e, index, container):
+    def favorite_instrument_function(e, index):
 
-        for instrumento in get_all_instruments():
-            if instrumento["index"] not in get_all_favorite_instruments():
-                container.content = ft.Icon(ft.Icons.STAR, size=15)
-                favorite_instrument(e, index)
-            else:
-                container.content = ft.Icon(ft.Icons.STAR_BORDER_OUTLINED, size=15)
-                unfavorite_instrument(e, index)
+        if index not in get_all_favorite_instruments():
+            e.content = ft.Icon(ft.Icons.STAR, size=15)
+            favorite_instrument_json(index)
+        else:
+            e.content = ft.Icon(ft.Icons.STAR_BORDER_OUTLINED, size=15)
+            unfavorite_instrument_json(index)
+
+        reload_page(e)
 
     def get_current_icon(index):
         if index in get_all_favorite_instruments():
@@ -111,8 +112,9 @@ def open_instruments(page: ft.Page):
             reload_page(e)
 
     def reload_page(e):
-        load_instruments(e)
-        set_theme(page, get_current_theme())
+        load_instruments(None)
+
+        page.update()
 
     def validate_field(e, field):
         if field.label_style == ft.TextStyle(color=ft.Colors.RED):
@@ -122,10 +124,10 @@ def open_instruments(page: ft.Page):
 
     def insert_instrument(e, dialog):
 
-        nome = nome_field.value
         descricao = descricao_field.value
-        marca = marca_field.value
-        cordas = cordas_field.value
+        cordas    = cordas_field.value
+        marca     = marca_field.value
+        nome      = nome_field.value
 
         if not nome:
             nome_field.border_color = ft.Colors.RED
@@ -136,11 +138,11 @@ def open_instruments(page: ft.Page):
         if not marca:
             marca_field.border_color = ft.Colors.RED
             marca_field.label_style = ft.TextStyle(color=ft.Colors.RED)
-        if not cordas:
+        if not cordas or any(letra.isalpha() for letra in cordas):
             cordas_field.border_color = ft.Colors.RED
             cordas_field.label_style = ft.TextStyle(color=ft.Colors.RED)
 
-        if nome and descricao and marca and cordas:
+        if nome and descricao and marca and cordas and not any(letra.isalpha() for letra in cordas):
             insert_new_instrument(nome, descricao, marca, cordas)
 
             close_dialog(e, dialog)
@@ -156,19 +158,35 @@ def open_instruments(page: ft.Page):
         dialog.visible = False
         page.update()
 
-    def favorite_instrument(e, index):
-        favorite_instrument_json(index)
-
-    def unfavorite_instrument(e, index):
-        unfavorite_instrument_json(index)
-
     def edit_instrument(e, index):
 
-        def edit(index, name, description, brand, strings):
-            edit_instrument_json(index, name, description, brand, strings)
-            close_dialog(e, insert_instrument_dialog_edit)
+        def edit(index, name_field, description_field, brand_field, strings_field):
 
-            reload_page(e)
+            description = description_field.value
+            strings     = strings_field.value
+            brand       = brand_field.value
+            name        = name_field.value
+
+
+            if not name:
+                name_field.border_color = ft.Colors.RED
+                name_field.label_style = ft.TextStyle(color=ft.Colors.RED)
+            if not description:
+                description_field.border_color = ft.Colors.RED
+                description_field.label_style = ft.TextStyle(color=ft.Colors.RED)
+            if not brand:
+                brand_field.border_color = ft.Colors.RED
+                brand_field.label_style = ft.TextStyle(color=ft.Colors.RED)
+            if not strings or any(letra.isalpha() for letra in strings):
+                strings_field.border_color = ft.Colors.RED
+                strings_field.label_style = ft.TextStyle(color=ft.Colors.RED)
+
+            if name and description and brand and strings and not any(letra.isalpha() for letra in strings):
+
+                edit_instrument_json(index, name, description, brand, strings)
+                close_dialog(e, insert_instrument_dialog_edit)
+
+                reload_page(e)
 
         insert_instrument_dialog_edit.content = ft.Column(
             [
@@ -261,7 +279,7 @@ def open_instruments(page: ft.Page):
                                 shape=ft.RoundedRectangleBorder(radius=5),
                                 padding=ft.Padding.symmetric(horizontal=20, vertical=5)
                             ),
-                            on_click=lambda e: edit(index, nome_field_edit.value, descricao_field_edit.value, marca_field_edit.value, cordas_field_edit.value)
+                            on_click=lambda e: edit(index, nome_field_edit, descricao_field_edit, marca_field_edit, cordas_field_edit)
                         )
                     ],
                     alignment=ft.MainAxisAlignment.END
@@ -270,8 +288,6 @@ def open_instruments(page: ft.Page):
             ],
             spacing=30,
         )
-
-        set_theme(page, get_current_theme())
 
         open_dialog(e, insert_instrument_dialog_edit)
 
@@ -333,7 +349,7 @@ def open_instruments(page: ft.Page):
                                             alignment=ft.Alignment.CENTER,
                                             border_radius=5,
                                             ink=False,
-                                            on_click=lambda e, index=i: favorite_instrument_function(e, index + 1, star_favorite),
+                                            on_click=lambda e, index=i: favorite_instrument_function(e, index + 1),
                                         ),
                                         ft.Container(
                                             content=ft.Icon(ft.Icons.CLOSE, size=15),
@@ -368,6 +384,8 @@ def open_instruments(page: ft.Page):
                     alignment=ft.MainAxisAlignment.CENTER,
                 )
             )
+
+        set_theme(page, get_current_theme())
 
     insert_instrument_dialog_edit = ft.Container(
         data="card_container_above",

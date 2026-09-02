@@ -67,23 +67,26 @@ def get_instrument_by_index(index):
     return instruments_json()["instrumentos"][index - 1]
 
 def delete_instrument_json(index):
-
     data = instruments_json()
 
     all_instruments = data["instrumentos"]
+    all_instruments.pop(index - 1)
+
     for instrument in all_instruments:
-        if instrument["index"] == index:
-            all_instruments.pop(index-1)
         if instrument["index"] > index:
             instrument["index"] -= 1
 
-
     favorite_instruments = data["instrumentos_favoritos"]
-    for fav_index in favorite_instruments:
-        if fav_index == index:
-            favorite_instruments.remove(fav_index)
-        if fav_index > index:
-            fav_index -= 1
+    if index in favorite_instruments:
+        favorite_instruments.pop(index - 1)
+
+    new_favorite_list = []
+    for index_favorite in favorite_instruments:
+        if index_favorite >= index:
+            index_favorite = int(index_favorite - 1)
+        new_favorite_list.append(index_favorite)
+
+    data["instrumentos_favoritos"] = new_favorite_list
 
     save(data)
 
