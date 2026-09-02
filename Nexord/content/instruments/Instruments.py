@@ -102,7 +102,8 @@ def open_instruments(page: ft.Page):
 
                 ],
                 horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
-                alignment=ft.MainAxisAlignment.SPACE_BETWEEN
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                tight=True,
             )
 
             open_dialog(e, dialog_confirm_exclude)
@@ -115,12 +116,6 @@ def open_instruments(page: ft.Page):
         load_instruments(None)
 
         page.update()
-
-    def validate_field(e, field):
-        if field.label_style == ft.TextStyle(color=ft.Colors.RED):
-            field.data = ""
-
-        set_theme(page, get_current_theme())
 
     def insert_instrument(e, dialog):
 
@@ -257,7 +252,7 @@ def open_instruments(page: ft.Page):
                         ),
                         ft.Column(
                             [
-                                ft.Text("Cordas:"),
+                                ft.Text("Cordas do instrumento:"),
                                 cordas_field_edit := ft.TextField(
                                     value=get_strings_name_by_index(index),
                                     hint_text="Ex: 3, 4, 5, 6...",
@@ -270,6 +265,8 @@ def open_instruments(page: ft.Page):
                     spacing=20,
                     run_spacing=20,
                 ),
+
+                ft.Divider(),
 
                 ft.Row(
                     [
@@ -287,6 +284,7 @@ def open_instruments(page: ft.Page):
 
             ],
             spacing=30,
+            tight=True
         )
 
         open_dialog(e, insert_instrument_dialog_edit)
@@ -389,8 +387,7 @@ def open_instruments(page: ft.Page):
 
     insert_instrument_dialog_edit = ft.Container(
         data="card_container_above",
-        expand=True,
-        margin=ft.Margin.symmetric(vertical=100, horizontal=130),
+        width=min(page.width * 0.85, 600),
         bgcolor="#202020",
         border_radius=12,
         padding=20,
@@ -403,8 +400,7 @@ def open_instruments(page: ft.Page):
 
     dialog_confirm_exclude = ft.Container(
         data="card_container_above",
-        expand=True,
-        margin=ft.Margin.symmetric(vertical=300, horizontal=530),
+        width=min(page.width * 0.85, 600),
         bgcolor="#202020",
         border_radius=12,
         padding=20,
@@ -412,13 +408,12 @@ def open_instruments(page: ft.Page):
             blur_radius=20,
             spread_radius=2,
         ),
-        visible=False
+        visible=False,
     )
 
     insert_instrument_dialog = ft.Container(
         data="card_container_above",
-        expand=True,
-        margin=ft.Margin.symmetric(vertical=100, horizontal=130),
+        width=min(page.width * 0.85, 600),
         bgcolor="#202020",
         border_radius=12,
         padding=20,
@@ -492,7 +487,7 @@ def open_instruments(page: ft.Page):
                         ),
                         ft.Column(
                             [
-                                ft.Text("Cordas:"),
+                                ft.Text("Cordas do instrumento:"),
                                 cordas_field := ft.TextField(
                                     hint_text="Ex: 3, 4, 5, 6...",
                                     label="Cordas",
@@ -504,6 +499,8 @@ def open_instruments(page: ft.Page):
                     spacing=20,
                     run_spacing=20,
                 ),
+
+                ft.Divider(),
 
                 ft.Row(
                     [
@@ -521,6 +518,7 @@ def open_instruments(page: ft.Page):
 
             ],
             spacing=30,
+            tight=True
         ),
         visible=False
     )
