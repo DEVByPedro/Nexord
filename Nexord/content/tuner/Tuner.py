@@ -1,12 +1,16 @@
+import random
+
 from apps.app_configure_theme.app_configure_theme import set_theme, get_current_theme
 from config.user.microphone.MicrophoneSettings import isDefaultMicrophoneConfigurated, get_saved_microphones, save_microphones
 from apps.app_calculate_hertz.app_calculate_hertz import get_gauge, toggle_audio
 
 import flet as ft
 
+from content.instruments.InstrumentsConfig import get_instruments_name_strings, get_strings_by_name
 from content.tuner.afinacoes.Afinacoes import get_current_afinacao, get_all_tuning_saved, get_current_tuning_notes, \
     get_current_tuning_description, set_current_default_tuning, insert_tuning, delete_tuning_json, \
-    get_current_default_tuning, get_tuning_description_by_index
+    get_tuning_description_by_index, get_current_default_tuning, set_tuning_instrument, get_tuning_instrument, \
+    get_tuning_index_by_description
 
 running = False
 value_label = ft.Text("0.00 Hz", size=32, weight=ft.FontWeight.BOLD)
@@ -16,6 +20,61 @@ value_expected = ft.Text("0.00 Hz", size=30, weight=ft.FontWeight.BOLD, color=ft
 gauge, set_value_gauge = get_gauge(value_label, value_caption, value_expected)
 
 def open_afinador(page):
+
+    def update_cordas(e):
+
+        instrumento = e.control.value
+
+        if not instrumento:
+            return
+
+        quantidade_cordas = get_strings_by_name(instrumento)
+
+        cordas_container.content = ft.Column(
+            spacing=10,
+            scroll=ft.ScrollMode.AUTO,
+            tight=True
+        )
+
+        for i in range(quantidade_cordas):
+            numero_corda = quantidade_cordas - i
+
+            cordas_container.content.controls.append(
+                ft.Row(
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    controls=[
+                        ft.Container(
+                            data="card_container",
+                            width=65,
+                            content=ft.Text(
+                                f"{numero_corda}ª Corda",
+                                size=12,
+                            ),
+                        ),
+
+                        ft.TextField(
+                            expand=True,
+                            height=40,
+                            hint_text=f"Ex: E2",
+                            border_radius=6,
+                            filled=True,
+                            content_padding=ft.Padding.symmetric(
+                                horizontal=10,
+                                vertical=7,
+                            ),
+                        ),
+                    ],
+                )
+            )
+
+        set_theme(
+            page,
+            get_current_theme(),
+            root=cordas_container,
+            update=False
+        )
+
+        page.update()
 
     def on_window_resized(e):
         dialog_tuning_select.margin = ft.Margin.symmetric(
@@ -58,14 +117,14 @@ def open_afinador(page):
 
     def change_current_tuning(e, index):
         set_current_default_tuning(index)
-        title_tuning.value = get_current_tuning_description()
+        #title_tuning.value = get_current_tuning_description()
         notes_tuning.value = get_current_tuning_notes()
 
         page.update()
 
         close_dialog(e, dialog_tuning_select)
 
-    def nota_para_hz(corda, nota):
+    def nota_para_hz(nota):
         NOTAS = {
             "C": 0,
             "C#": 1,
@@ -88,40 +147,10 @@ def open_afinador(page):
             "Cb": 11,
         }
 
-        OITAVAS_CORDAS = {
-            6: 2,
-            5: 2,
-            4: 3,
-            3: 3,
-            2: 3,
-            1: 4
-        }
+        nome = nota[:-1]
+        oitava = int(nota[-1])
 
-        NOTAS_CORDAS = {
-            6: "E",
-            5: "A",
-            4: "D",
-            3: "G",
-            2: "B",
-            1: "E"
-        }
-
-        nota_padrao = NOTAS_CORDAS[corda]
-        oitava = OITAVAS_CORDAS[corda]
-
-        midi_padrao = (
-                (oitava + 1) * 12
-                + NOTAS[nota_padrao]
-        )
-
-        semitons = NOTAS[nota] - NOTAS[nota_padrao]
-
-        if semitons > 6:
-            semitons -= 12
-        elif semitons < -6:
-            semitons += 12
-
-        midi = midi_padrao + semitons
+        midi = (oitava + 1) * 12 + NOTAS[nome]
 
         frequencia = 440 * (2 ** ((midi - 69) / 12))
 
@@ -134,71 +163,13 @@ def open_afinador(page):
         if get_current_default_tuning() >= index:
             set_current_default_tuning(index)
 
-        return_tuning(e)
-
         page.update()
-
-    def open_select_tuning(e):
-
-        tuning_list_column.controls.clear()
-
-        tuning_list_column.controls.append(new_tuning_button)
-
-        # name button
-        for i, afinacao in enumerate(get_all_tuning_saved()):
-            tuning_list_column.controls.append(
-                ft.Button(
-                    ft.Row(
-                        [
-                            ft.Row(
-                                [
-                                    ft.Container(
-                                        content=ft.Icon(ft.Icons.CLOSE, size=15),
-                                        data="card_button",
-                                        width=67,
-                                        height=34,
-                                        bgcolor=ft.Colors.TRANSPARENT,
-                                        alignment=ft.Alignment.CENTER,
-                                        border_radius=5,
-                                        ink=False,
-                                        on_click=lambda e: close_dialog(e, dialog_tuning_select),
-                                    ),
-                                    ft.Text(afinacao["afinacao_descricao"]),
-                                ],
-                                spacing=5
-                            )
-                        ],
-                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN
-                    ),
-                    on_click=lambda e, index=i: change_current_tuning(e, index+1),
-                    style=ft.ButtonStyle(
-                        mouse_cursor = ft.MouseCursor.CLICK,
-                        shape=ft.RoundedRectangleBorder(radius=5),
-                        padding=0
-                    ),
-                )
-            )
-
-        # delete button
-        for i, button in enumerate(tuning_list_column.controls):
-            if i > 1:
-                button.content.controls.append(
-                    ft.Button(
-                        ft.Icon(ft.Icons.DELETE),
-                        on_click=lambda e, index=i:delete_tuning(e, index),
-                        style=ft.ButtonStyle(
-                            mouse_cursor = ft.MouseCursor.CLICK,
-                            shape=ft.RoundedRectangleBorder(radius=5),
-                        ),
-                    )
-                )
 
         set_theme(page, get_current_theme())
 
         open_dialog(e, dialog_tuning_select)
 
     def open_tuning_dialog(e):
-
         close_dialog(e, dialog_tuning_select)
 
         open_dialog(e, dialog_tuning_create)
@@ -229,23 +200,49 @@ def open_afinador(page):
         dialog.visible = True
         page.update()
 
-    def return_tuning(e):
-        close_dialog(e, dialog_tuning_create)
-        open_select_tuning(e)
-
     def create_tuning(e):
-        notas = [
-            [sexta_corda.value, nota_para_hz(6, sexta_corda.value)],
-            [quinta_corda.value, nota_para_hz(5, quinta_corda.value)],
-            [quarta_corda.value, nota_para_hz(4, quarta_corda.value)],
-            [terceira_corda.value, nota_para_hz(3, terceira_corda.value)],
-            [segunda_corda.value, nota_para_hz(2, segunda_corda.value)],
-            [primeira_corda.value, nota_para_hz(1, primeira_corda.value)],
-        ]
 
-        if tuning_description != "":
-            insert_tuning(tuning_description.value, notas)
-            return_tuning(e)
+        if not tuning_description:
+            tuning_description.border_color = ft.Colors.RED
+            tuning_description.label_style = ft.TextStyle(color=ft.Colors.RED)
+        if instrument_description.value == "Instrumento":
+            instrument_description.border_color = ft.Colors.RED
+            instrument_description.label_style = ft.TextStyle(color=ft.Colors.RED)
+
+        if tuning_description and instrument_description.value != "Instrumento":
+
+            notas = []
+            notas_do_instrumento = []
+
+            for i, textfield in enumerate(cordas_container.content.controls):
+                corda = textfield.controls[1].value
+                notas_do_instrumento.append(corda)
+
+                notas.append((corda, nota_para_hz(corda)))
+
+            if tuning_description.value != "":
+                insert_tuning(tuning_description.value, notas, instrument_description.value)
+                close_dialog(e, dialog_tuning_create)
+
+    def open_dropdown(e, descricao):
+
+        if descricao == " + Criar Afinação":
+            open_dialog(e, dialog_tuning_create)
+        else:
+            change_current_tuning(e, get_tuning_index_by_description(e.control.text))
+
+    cordas_container = ft.Container(
+        data="card_container",
+        margin=ft.Margin(top=8),
+        padding=ft.Padding(
+            left=12,
+            right=12,
+            top=8,
+            bottom=8,
+        ),
+        border_radius=9,
+        border=ft.Border.all(1, "#303849"),
+    )
 
     edit_tuning_dialog = ft.Container(
         data="card_container_above",
@@ -353,54 +350,58 @@ def open_afinador(page):
         visible=False,
     )
 
-    dialog_tuning_create = ft.Container(
-        data="card_container_above",
-        margin=ft.Margin.symmetric(horizontal=250, vertical=180),
-        bgcolor="#202633",
-        border_radius=14,
-        padding=24,
+    create_tuning_content = [
 
-        border=ft.Border.all(1, "#394152"),
+        ft.Row(
+            [
+                ft.Column(
+                    [
+                        ft.Text(
+                            "Crie uma nova afinação",
+                            size=23,
+                            weight=ft.FontWeight.BOLD,
+                        ),
 
-        shadow=ft.BoxShadow(
-            blur_radius=25,
-            spread_radius=2,
+                        ft.Container(
+                            data="card_container",
+                            margin=ft.Margin(top=6, bottom=20),
+                            content=ft.Text(
+                                "Configure as notas de cada corda, da mais grave "
+                                "até a mais aguda. Enviando também a oitava seguido da nota.",
+                                size=13,
+                                color="#AEB6C5",
+                            ),
+                        ),
+                    ]
+                ),
+                ft.Container(
+                    content=ft.Icon(ft.Icons.CLOSE, size=15),
+                    data="card_container",
+                    width=67,
+                    height=34,
+                    bgcolor=ft.Colors.TRANSPARENT,
+                    alignment=ft.Alignment.CENTER,
+                    border_radius=5,
+                    ink=False,
+                    on_click=lambda e: close_dialog(e, dialog_tuning_create),
+                )
+            ],
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN
         ),
 
-        content=ft.Column(
-            scroll=ft.ScrollMode.AUTO,
-            tight=True,
-            spacing=0,
-            controls=[
+        ft.Text(
+            "Informações",
+            size=14,
+            weight=ft.FontWeight.BOLD,
+            color="#DDE3ED",
+        ),
 
-                ft.Text(
-                    "Crie uma nova afinação",
-                    size=23,
-                    weight=ft.FontWeight.BOLD,
-                ),
-
-                ft.Container(
-                    data="card_container",
-                    margin=ft.Margin(top=6, bottom=20),
-                    content=ft.Text(
-                        "Configure as notas de cada corda, da mais grave "
-                        "até a mais aguda.",
-                        size=13,
-                        color="#AEB6C5",
-                    ),
-                ),
-
-                ft.Text(
-                    "Informações",
-                    size=14,
-                    weight=ft.FontWeight.BOLD,
-                    color="#DDE3ED",
-                ),
-
-                ft.Container(
-                    data="card_container",
-                    margin=ft.Margin(top=8, bottom=20),
-                    content=ft.Column(
+        ft.Container(
+            data="card_container",
+            margin=ft.Margin(top=8, bottom=20),
+            content=ft.Row(
+                [
+                    ft.Column(
                         spacing=6,
                         controls=[
                             ft.Text(
@@ -422,249 +423,93 @@ def open_afinador(page):
                             ),
                         ],
                     ),
-                ),
 
-                ft.Divider(),
-
-                ft.Text(
-                    "Cordas",
-                    size=14,
-                    weight=ft.FontWeight.BOLD,
-                    color="#DDE3ED",
-                ),
-
-                ft.Container(
-                    data="card_container",
-                    margin=ft.Margin(top=8),
-                    padding=ft.Padding(
-                        left=12,
-                        right=12,
-                        top=8,
-                        bottom=8,
-                    ),
-                    bgcolor="#1A202D",
-                    border_radius=9,
-                    border=ft.Border.all(1, "#303849"),
-
-                    content=ft.Column(
-                        scroll=ft.ScrollMode.ALWAYS,
-                        #height=200,
-                        tight=True,
-                        spacing=8,
+                    ft.Column(
+                        spacing=6,
                         controls=[
-
-                            ft.Row(
-                                vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                                controls=[
-                                    ft.Container(
-                                        data="card_container",
-                                        width=65,
-                                        content=ft.Text(
-                                            "6ª Corda",
-                                            size=12,
-                                            color="#AEB6C5",
-                                        ),
-                                    ),
-
-                                    sexta_corda := ft.TextField(
-                                        expand=True,
-                                        height=40,
-                                        hint_text="Ex: B",
-                                        border_radius=6,
-                                        filled=True,
-                                        content_padding=ft.Padding.symmetric(
-                                            horizontal=10,
-                                            vertical=7,
-                                        ),
-                                    ),
-                                ],
+                            ft.Text(
+                                "Instrumento:",
+                                size=12,
+                                color="#AEB6C5",
                             ),
 
-                            ft.Row(
-                                vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                                controls=[
-                                    ft.Container(
-                                        data="card_container",
-                                        width=65,
-                                        content=ft.Text(
-                                            "5ª Corda",
-                                            size=12,
-                                            color="#AEB6C5",
-                                        ),
-                                    ),
-
-                                    quinta_corda := ft.TextField(
-                                        expand=True,
-                                        height=40,
-                                        hint_text="Ex: F#",
-                                        border_radius=6,
-                                        filled=True,
-                                        content_padding=ft.Padding.symmetric(
-                                            horizontal=10,
-                                            vertical=7,
-                                        ),
-                                    ),
+                            instrument_description := ft.Dropdown(
+                                label="Instrumento",
+                                options=[
+                                    ft.DropdownOption(
+                                        text=inst["nome"]
+                                    )
+                                    for inst in get_instruments_name_strings()
                                 ],
-                            ),
-
-                            ft.Row(
-                                vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                                controls=[
-                                    ft.Container(
-                                        data="card_container",
-                                        width=65,
-                                        content=ft.Text(
-                                            "4ª Corda",
-                                            size=12,
-                                            color="#AEB6C5",
-                                        ),
-                                    ),
-
-                                    quarta_corda := ft.TextField(
-                                        expand=True,
-                                        height=40,
-                                        hint_text="Ex: B",
-                                        border_radius=6,
-                                        filled=True,
-                                        content_padding=ft.Padding.symmetric(
-                                            horizontal=10,
-                                            vertical=7,
-                                        ),
-                                    ),
-                                ],
-                            ),
-
-                            ft.Row(
-                                vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                                controls=[
-                                    ft.Container(
-                                        data="card_container",
-                                        width=65,
-                                        content=ft.Text(
-                                            "3ª Corda",
-                                            size=12,
-                                            color="#AEB6C5",
-                                        ),
-                                    ),
-
-                                    terceira_corda := ft.TextField(
-                                        expand=True,
-                                        height=40,
-                                        hint_text="Ex: E",
-                                        border_radius=6,
-                                        filled=True,
-                                        content_padding=ft.Padding.symmetric(
-                                            horizontal=10,
-                                            vertical=7,
-                                        ),
-                                    ),
-                                ],
-                            ),
-
-                            ft.Row(
-                                vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                                controls=[
-                                    ft.Container(
-                                        data="card_container",
-                                        width=65,
-                                        content=ft.Text(
-                                            "2ª Corda",
-                                            size=12,
-                                            color="#AEB6C5",
-                                        ),
-                                    ),
-
-                                    segunda_corda := ft.TextField(
-                                        expand=True,
-                                        height=40,
-                                        hint_text="Ex: B",
-                                        border_radius=6,
-                                        filled=True,
-                                        content_padding=ft.Padding.symmetric(
-                                            horizontal=10,
-                                            vertical=7,
-                                        ),
-                                    ),
-                                ],
-                            ),
-
-                            ft.Row(
-                                vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                                controls=[
-                                    ft.Container(
-                                        data="card_container",
-                                        width=65,
-                                        content=ft.Text(
-                                            "1ª Corda",
-                                            size=12,
-                                            color="#AEB6C5",
-                                        ),
-                                    ),
-
-                                    primeira_corda := ft.TextField(
-                                        expand=True,
-                                        height=40,
-                                        hint_text="Ex: E",
-                                        border_radius=6,
-                                        filled=True,
-                                        content_padding=ft.Padding.symmetric(
-                                            horizontal=10,
-                                            vertical=7,
-                                        ),
-                                    ),
-                                ],
+                                on_select=update_cordas
                             ),
                         ],
-                    ),
-                ),
+                    )
+                ]
+            ),
+        ),
 
-                ft.Container(
-                    margin=ft.Margin(top=20),
-                    data="card_container",
-                    content=ft.Row(
-                        alignment=ft.MainAxisAlignment.END,
-                        spacing=8,
+        ft.Divider(),
 
-                        controls=[
+        ft.Text(
+            "Cordas",
+            size=14,
+            weight=ft.FontWeight.BOLD,
+            color="#DDE3ED",
+        ),
 
-                            ft.Button(
-                                "Voltar",
-                                style=ft.ButtonStyle(
-                                    bgcolor="#181E29",
-                                    color="#D7DCE5",
-                                    padding=ft.Padding.symmetric(
-                                        horizontal=18,
-                                        vertical=10,
-                                    ),
-                                    shape=ft.RoundedRectangleBorder(
-                                        radius=7
-                                    ),
-                                    mouse_cursor=ft.MouseCursor.CLICK,
-                                ),
-                                on_click=lambda e: return_tuning(e),
+        cordas_container,
+
+        ft.Container(
+            margin=ft.Margin(top=20),
+            data="card_container",
+            content=ft.Row(
+                alignment=ft.MainAxisAlignment.END,
+                spacing=8,
+
+                controls=[
+
+                    ft.Button(
+                        "Criar Afinação",
+                        data="card_button",
+                        style=ft.ButtonStyle(
+                            bgcolor="#3B4A61",
+                            color="#FFFFFF",
+                            padding=ft.Padding.symmetric(
+                                horizontal=20,
+                                vertical=10,
                             ),
-
-                            ft.Button(
-                                "Criar Afinação",
-                                data="card_button",
-                                style=ft.ButtonStyle(
-                                    bgcolor="#3B4A61",
-                                    color="#FFFFFF",
-                                    padding=ft.Padding.symmetric(
-                                        horizontal=20,
-                                        vertical=10,
-                                    ),
-                                    shape=ft.RoundedRectangleBorder(
-                                        radius=7
-                                    ),
-                                    mouse_cursor=ft.MouseCursor.CLICK,
-                                ),
-                                on_click=lambda e: create_tuning(e),
+                            shape=ft.RoundedRectangleBorder(
+                                radius=7
                             ),
-                        ],
+                            mouse_cursor=ft.MouseCursor.CLICK,
+                        ),
+                        on_click=lambda e: create_tuning(e),
                     ),
-                ),
-            ],
+                ],
+            ),
+        ),
+    ]
+
+    dialog_tuning_create = ft.Container(
+        data="card_container_above",
+        margin=ft.Margin.symmetric(horizontal=250, vertical=180),
+        bgcolor="#202633",
+        border_radius=14,
+        padding=24,
+
+        border=ft.Border.all(1, "#394152"),
+
+        shadow=ft.BoxShadow(
+            blur_radius=25,
+            spread_radius=2,
+        ),
+
+        content=ft.Column(
+            scroll=ft.ScrollMode.AUTO,
+            tight=True,
+            spacing=0,
+            controls=create_tuning_content,
         ),
 
         visible=False,
@@ -673,7 +518,8 @@ def open_afinador(page):
     buttons_row = ft.Column(
         horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
         scroll=ft.ScrollMode.AUTO,
-        height=200
+        height=200,
+        tight=True
     )
 
     for button in get_saved_microphones()["all_microphones"]:
@@ -691,7 +537,7 @@ def open_afinador(page):
 
     dialog = ft.Container(
         data="card_container_above",
-        margin=ft.Margin.symmetric(horizontal=page.window.width / 4,vertical=page.window.width / 6),
+        width=min(page.width * 0.85, 600),
         border_radius=12,
         padding=20,
         shadow=ft.BoxShadow(
@@ -725,11 +571,13 @@ def open_afinador(page):
                         ),
 
                         ft.Text("Escolha uma das opções de microfones abaixo:"),
-                    ]
+                    ],
+                    tight=True
                 ),
                 buttons_row,
             ],
             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+            tight=True
         ),
         visible=False,
     )
@@ -758,43 +606,32 @@ def open_afinador(page):
         size=30,
     )
 
-    mic_button = ft.Button(
-        ft.Row(
-            [
-                ft.Icon(ft.Icons.MIC),
-                ft.Text("Configurar Microfone")
-            ],
-            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-        ),
-        style=ft.ButtonStyle(
-            mouse_cursor = ft.MouseCursor.CLICK,
-            shape=ft.RoundedRectangleBorder(radius=5)
-        ),
-        on_click=open_mic_default_chooser
+    afinacoes = get_all_tuning_saved()
+    afinacoes.append({"afinacao_descricao": " + Criar Afinação"})
+    afinacoes.reverse()
+
+    tuner_button_chooser = ft.Dropdown(
+        label="Selecione a Afinação",
+        options=[
+            ft.DropdownOption(
+                text=tuning["afinacao_descricao"],
+            )
+            for i, tuning in enumerate(afinacoes)
+        ],
+        border_radius=20,
+        on_select=lambda e: open_dropdown(e, e.control.text)
     )
 
-    tuner_button_chooser = ft.Button(
-        ft.Row(
-            [
-                ft.Column(
-                    [
-                        ft.Text("Afinação Atual:", size=15),
-                        title_tuning := ft.Text(get_current_tuning_description(), size=30, weight=ft.FontWeight.BOLD)
-                    ],
-                    alignment = ft.MainAxisAlignment.START,
-                    spacing=5,
-                ),
-                ft.Icon(ft.Icons.KEYBOARD_ARROW_DOWN)
-            ],
-            alignment=ft.MainAxisAlignment.SPACE_BETWEEN
-        ),
-        data="card_container",
-        style=ft.ButtonStyle(
-            mouse_cursor = ft.MouseCursor.CLICK,
-            shape=ft.RoundedRectangleBorder(radius=10),
-        ),
-        width=350,
-        on_click=open_select_tuning
+    create_tuning_button = ft.Container(
+        content=ft.Text("+", size=15),
+        data="card_button",
+        width=45,
+        height=45,
+        bgcolor=ft.Colors.TRANSPARENT,
+        alignment=ft.Alignment.CENTER,
+        border_radius=20,
+        ink=False,
+        on_click=lambda e: open_dialog(e, dialog_tuning_create),
     )
 
     header_row_container = ft.Container(
@@ -804,7 +641,6 @@ def open_afinador(page):
                 ft.Row(
                     [
                         title_page,
-                        mic_button
                     ],
                     alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                 ),
@@ -825,9 +661,6 @@ def open_afinador(page):
         ),
         on_click=lambda e: set_value(e)
     )
-
-    afinacoes_lista = get_all_tuning_saved()
-
 
     gauge_column = ft.Column(
         [
@@ -861,12 +694,27 @@ def open_afinador(page):
                     ft.Container(),
                     ft.Row(
                         [
-                            tuner_button_chooser
+                            tuner_button_chooser,
+                            create_tuning_button
                         ],
                         alignment=ft.MainAxisAlignment.CENTER
                     ),
                     tuner_body,
-                    ft.Row([start_button],alignment=ft.MainAxisAlignment.CENTER)
+                    ft.Row(
+                        [
+                            start_button,
+                            ft.Button(
+                                ft.Row([ft.Icon(ft.Icons.MIC)]),
+                                style=ft.ButtonStyle(
+                                    mouse_cursor = ft.MouseCursor.CLICK,
+                                    shape=ft.RoundedRectangleBorder(radius=10),
+                                    padding=20
+                                ),
+                                on_click=open_mic_default_chooser
+
+                            )
+                        ],
+                    alignment=ft.MainAxisAlignment.CENTER)
                 ],
                 spacing=10
             ),
@@ -875,8 +723,6 @@ def open_afinador(page):
             border_radius = 20
         ),
     )
-
-    #page.on_resize = on_window_resized
 
     return ft.Stack(
         expand=True,

@@ -12,14 +12,25 @@ def open_instruments(page: ft.Page):
 
     def favorite_instrument_function(e, index):
 
+        container = e.control
+
         if index not in get_all_favorite_instruments():
-            e.content = ft.Icon(ft.Icons.STAR, size=15)
             favorite_instrument_json(index)
+
+            container.content = ft.Icon(
+                ft.Icons.STAR,
+                size=15
+            )
+
         else:
-            e.content = ft.Icon(ft.Icons.STAR_BORDER_OUTLINED, size=15)
             unfavorite_instrument_json(index)
 
-        reload_page(e)
+            container.content = ft.Icon(
+                ft.Icons.STAR_BORDER_OUTLINED,
+                size=15
+            )
+
+        container.update()
 
     def get_current_icon(index):
         if index in get_all_favorite_instruments():
@@ -33,7 +44,7 @@ def open_instruments(page: ft.Page):
             delete_instrument_json(index)
             close_dialog(e, dialog_confirm_exclude)
 
-            reload_page(e)
+            reload_page()
 
         if get_delete_instrument_confirm():
             dialog_confirm_exclude.content = ft.Column(
@@ -112,8 +123,15 @@ def open_instruments(page: ft.Page):
             delete_instrument_json(index)
             reload_page(e)
 
-    def reload_page(e):
-        load_instruments(None)
+    def reload_page():
+        load_instruments()
+
+        set_theme(
+            page,
+            get_current_theme(),
+            root=view,
+            update=False
+        )
 
         page.update()
 
@@ -141,7 +159,7 @@ def open_instruments(page: ft.Page):
             insert_new_instrument(nome, descricao, marca, cordas)
 
             close_dialog(e, dialog)
-            reload_page(e)
+            reload_page()
 
     def open_dialog(e, dialog):
         barrier.visible = True
@@ -181,7 +199,7 @@ def open_instruments(page: ft.Page):
                 edit_instrument_json(index, name, description, brand, strings)
                 close_dialog(e, insert_instrument_dialog_edit)
 
-                reload_page(e)
+                reload_page()
 
         insert_instrument_dialog_edit.content = ft.Column(
             [
@@ -289,7 +307,7 @@ def open_instruments(page: ft.Page):
 
         open_dialog(e, insert_instrument_dialog_edit)
 
-    def load_instruments(e):
+    def load_instruments():
 
         instrumentos_colunas.controls.clear()
 
@@ -330,7 +348,7 @@ def open_instruments(page: ft.Page):
                                                     ],
                                                     spacing=1
                                                 ),
-                                                ft.Text(f"{instrumento["instrumentos_quantidades_cordas"]} Cordas")
+                                                ft.Text(f"{instrumento["instrumento_quantidade_cordas"]} Cordas")
                                             ]
                                         )
                                     ],
@@ -383,7 +401,7 @@ def open_instruments(page: ft.Page):
                 )
             )
 
-        set_theme(page, get_current_theme())
+    view = None
 
     insert_instrument_dialog_edit = ft.Container(
         data="card_container_above",
@@ -600,12 +618,14 @@ def open_instruments(page: ft.Page):
         ),
     )
 
-    load_instruments(None)
+    load_instruments()
 
-    return ft.Stack(
+    view = ft.Stack(
         expand=True,
         controls=[
             content,
             overlay,
         ],
     )
+
+    return view

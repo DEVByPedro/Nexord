@@ -19,7 +19,7 @@ def get_current_textcolor(theme):
 
 	return text_color
 
-def set_theme(page, theme):
+def set_theme(page, theme, root=None, update=True):
 	if theme == "light":
 		page.theme_mode = ft.ThemeMode.LIGHT
 		page.bgcolor = "#E8EDF5"
@@ -91,8 +91,18 @@ def set_theme(page, theme):
 		elif isinstance(control, ft.VerticalDivider):
 			control.color = button_hover_color
 
+		elif isinstance(control, ft.Dropdown):
+			control.filled = True
+			control.bgcolor = button_color
+			control.fill_color = button_color
+			control.border_color = "#444444"
+
 		elif isinstance(control, ft.Container):
 			control.bgcolor = card_color
+
+			if control.data == "card_button":
+				control.bgcolor = button_color
+				control.border_color = "#444444"
 
 			if control.data == "leftbar":
 				control.bgcolor = leftbar_color
@@ -162,10 +172,14 @@ def set_theme(page, theme):
 				for action in control.actions:
 					update_control(action)
 
+	if root is not None:
+		update_control(root)
+
 	for control in page.controls:
 		update_control(control)
 
-	page.update()
+	if update:
+		page.update()
 
 def swap_theme(page):
 	if page.theme_mode == ft.ThemeMode.LIGHT:

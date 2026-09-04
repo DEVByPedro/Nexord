@@ -33,7 +33,7 @@ def insert_new_instrument(name, description, brand, strings):
             "instrumento_nome": name,
             "instrumento_descricao": description,
             "instrumento_marca": brand,
-            "instrumentos_quantidades_cordas": int(strings)
+            "instrumento_quantidade_cordas": int(strings)
         }
     )
 
@@ -78,7 +78,9 @@ def delete_instrument_json(index):
 
     favorite_instruments = data["instrumentos_favoritos"]
     if index in favorite_instruments:
-        favorite_instruments.pop(index - 1)
+        for i , obj in enumerate(favorite_instruments):
+            if obj == index:
+                favorite_instruments.pop(i)
 
     new_favorite_list = []
     for index_favorite in favorite_instruments:
@@ -100,7 +102,7 @@ def get_brand_name_by_index(index):
     return instruments_json()["instrumentos"][index - 1]["instrumento_marca"]
 
 def get_strings_name_by_index(index):
-    return instruments_json()["instrumentos"][index - 1]["instrumentos_quantidades_cordas"]
+    return instruments_json()["instrumentos"][index - 1]["instrumento_quantidade_cordas"]
 
 def edit_instrument_json(index, name, description, brand, strings):
 
@@ -114,3 +116,30 @@ def edit_instrument_json(index, name, description, brand, strings):
     instrument["instrumentos_quantidades_cordas"] = strings
 
     save(data)
+
+def get_instruments_name_strings():
+
+    all_instruments = get_all_instruments()
+
+    list = []
+    for instrument in all_instruments:
+        list.append({"nome": instrument["instrumento_nome"], "cordas": instrument["instrumento_quantidade_cordas"]})
+
+    return list
+
+def get_strings_by_name(name):
+
+    for instrument in get_all_instruments():
+        if instrument["instrumento_nome"] == name:
+            return instrument["instrumento_quantidade_cordas"]
+
+def get_instrument_index_by_name(name):
+
+    data = instruments_json()
+
+    for instrument in data["instrumentos"]:
+        if instrument["instrumento_nome"] == name:
+            return instrument["index"]
+
+    return None
+

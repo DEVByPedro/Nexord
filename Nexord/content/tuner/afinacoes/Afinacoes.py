@@ -1,6 +1,8 @@
 import json
 import os
 
+from content.instruments.InstrumentsConfig import get_instrument_index_by_name, get_instrument_name_by_index
+
 path = "config/user/json/afinacoes.json"
 
 def save(user_data):
@@ -18,6 +20,7 @@ def create_afinacoes_json():
                 {
                     "index": 1,
                     "afinacao_descricao": "Afinação Padrão",
+                    "afinacao_instrumento": None,
                     "notas": [
                         ("E", 82.41),
                         ("A", 110.00),
@@ -71,9 +74,9 @@ def get_current_tuning_notes():
 
     for i, (note, frequency) in enumerate(afinacoes):
         if i < len(afinacoes):
-            notes += note + " "
+            notes += str(note) + " "
         else:
-            notes += note
+            notes += str(note)
 
     return notes
 
@@ -92,7 +95,7 @@ def set_current_default_tuning(index):
 
     save(json_data)
 
-def insert_tuning(description, notes):
+def insert_tuning(description, notes, instrument):
     json_data = afinacao_json()
 
     next_index = len(json_data["afinacoes"]) + 1
@@ -101,6 +104,7 @@ def insert_tuning(description, notes):
         {
             "index": next_index,
             "afinacao_descricao": description,
+            "afinacao_instrumento": get_instrument_index_by_name(instrument),
             "notas": notes
         }
     )
@@ -127,3 +131,28 @@ def get_tuning_description_by_index(index):
     json_data = afinacao_json()
 
     return json_data["afinacoes"][index]["afinacao_descricao"]
+
+def get_tuning_index_by_description(description):
+    json_data = afinacao_json()
+
+    for tuning in json_data["afinacoes"]:
+        if tuning["afinacao_descricao"] == str(description):
+            return tuning["index"]
+
+def set_tuning_instrument(instrument_index, tuning_index):
+    data = afinacao_json()
+
+    data["afinacoes"][tuning_index]["afinacao_instrumento"] = instrument_index
+
+    save(data)
+
+def get_tuning_instrument(instrument):
+
+    tuning_instrument_id = instrument["afinacao_instrumento"]
+
+    if tuning_instrument_id == None:
+        return ""
+
+    instrument_name = get_instrument_name_by_index(tuning_instrument_id)
+
+    return instrument_name if instrument_name != None else ""

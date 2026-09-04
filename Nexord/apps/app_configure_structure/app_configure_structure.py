@@ -8,7 +8,7 @@ from content.tuner.Tuner import open_afinador
 from content.metronome.Metronome import open_metronome
 
 other_page = ft.Container(expand=True)
-rota_atual = "instrumentos"
+rota_atual = "afinador"
 
 def open_scales(page):
 	return ft.Container(
