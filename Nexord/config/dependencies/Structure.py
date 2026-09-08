@@ -25,6 +25,8 @@ def install_dependencies():
 		print()
 		print("Required modules are installed successfully.")
 		print()
+		print("Starting Nexord!")
+		print()
 
 def configure_application():
 

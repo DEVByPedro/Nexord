@@ -6,9 +6,10 @@ from config.user.microphone.MicrophoneSettings import create_microphones_json
 from content.instruments.Instruments import open_instruments
 from content.tuner.Tuner import open_afinador
 from content.metronome.Metronome import open_metronome
+from content.tunings.Tunings import open_tuning
 
 other_page = ft.Container(expand=True)
-rota_atual = "afinador"
+rota_atual = "afinacoes"
 
 def open_scales(page):
 	return ft.Container(
@@ -101,6 +102,7 @@ def configure_window(page: ft.Page):
 			"afinador": open_afinador,
 			"metronomo": open_metronome,
 			"instrumentos": open_instruments,
+			"afinacoes": open_tuning,
 			"escalas": open_scales,
 			"musicas": open_musics
 		}
@@ -192,6 +194,22 @@ def configure_window(page: ft.Page):
 								mouse_cursor=ft.MouseCursor.CLICK,
 							),
 							on_click=lambda e, button="instrumentos": update_clicked_button(e, button)
+						),
+						tuning := ft.Button(
+							ft.Row(
+								[
+									ft.Icon(ft.Icons.STORAGE, data="leftbar_button_icon"),
+									ft.Text("Afinações", visible=False)
+								],
+								alignment=ft.MainAxisAlignment.START,
+								vertical_alignment=ft.CrossAxisAlignment.CENTER,
+							),
+							style=ft.ButtonStyle(
+								shape=ft.RoundedRectangleBorder(radius=5),
+								padding=5,
+								mouse_cursor=ft.MouseCursor.CLICK,
+							),
+							on_click=lambda e, button="afinacoes": update_clicked_button(e, button)
 						),
 						escalas := ft.Button(
 							ft.Row(

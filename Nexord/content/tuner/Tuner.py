@@ -1,10 +1,6 @@
-import random
-
 from apps.app_configure_theme.app_configure_theme import set_theme, get_current_theme
 from config.user.microphone.MicrophoneSettings import isDefaultMicrophoneConfigurated, get_saved_microphones, save_microphones
 from apps.app_calculate_hertz.app_calculate_hertz import get_gauge, toggle_audio
-
-import flet as ft
 
 from content.instruments.InstrumentsConfig import get_instruments_name_strings, get_strings_by_name
 from content.tuner.afinacoes.Afinacoes import get_current_afinacao, get_all_tuning_saved, get_current_tuning_notes, \
@@ -12,10 +8,18 @@ from content.tuner.afinacoes.Afinacoes import get_current_afinacao, get_all_tuni
     get_tuning_description_by_index, get_current_default_tuning, set_tuning_instrument, get_tuning_instrument, \
     get_tuning_index_by_description
 
+import random
+import re
+import flet as ft
+import unicodedata
+
 running = False
 value_label = ft.Text("0.00 Hz", size=32, weight=ft.FontWeight.BOLD)
 value_caption = ft.Text("--", size=25, color=ft.Colors.ON_SURFACE_VARIANT)
 value_expected = ft.Text("0.00 Hz", size=30, weight=ft.FontWeight.BOLD, color=ft.Colors.GREY)
+
+MIN_VALUE_WIDTH=1000
+MIN_VALUE_HEIGHT=800
 
 gauge, set_value_gauge = get_gauge(value_label, value_caption, value_expected)
 
@@ -77,26 +81,37 @@ def open_afinador(page):
         page.update()
 
     def on_window_resized(e):
-        dialog_tuning_select.margin = ft.Margin.symmetric(
-            horizontal=page.window.width / 4,
-            vertical=page.window.width / 6,
-        )
 
-        edit_tuning_dialog.margin = ft.Margin.symmetric(
-            horizontal=page.window.width / 4,
-            vertical=page.window.width / 6,
-        )
+        if page.window.height == MIN_VALUE_HEIGHT or page.window.width == MIN_VALUE_WIDTH:
+            dialog_tuning_select.margin = ft.Margin.symmetric(
+            )
 
-        dialog_tuning_create.margin = ft.Margin.symmetric(
-            horizontal=page.window.width / 4,
-            vertical=page.window.width / 6,
-        )
+            edit_tuning_dialog.margin = ft.Margin.symmetric(
+            )
 
-        dialog.margin = ft.Margin.symmetric(
-            horizontal=page.window.width / 4,
-            vertical=page.window.width / 6,
-        )
+            dialog_tuning_create.margin = ft.Margin.symmetric(
+            )
 
+            dialog.margin = ft.Margin.symmetric(
+            )
+
+        elif page.window.height > MIN_VALUE_HEIGHT or page.window.width > MIN_VALUE_WIDTH:
+            dialog_tuning_select.margin = ft.Margin.symmetric(
+                horizontal=page.window.width / 4,
+                vertical=page.window.width / 6,
+            )
+
+            edit_tuning_dialog.margin = ft.Margin.symmetric(
+                horizontal=page.window.width / 4,
+                vertical=page.window.width / 6,
+            )
+
+            dialog_tuning_create.margin = ft.Margin.symmetric(horizontal=250, vertical=180)
+
+            dialog.margin = ft.Margin.symmetric(
+                horizontal=page.window.width / 4,
+                vertical=page.window.width / 6,
+            )
 
         page.update()
 
@@ -200,6 +215,12 @@ def open_afinador(page):
         dialog.visible = True
         page.update()
 
+    def remove_accents(texto):
+        return ''.join(
+            c for c in unicodedata.normalize('NFD', texto)
+            if unicodedata.category(c) != 'Mn'
+    )
+
     def create_tuning(e):
 
         if not tuning_description:
@@ -211,18 +232,75 @@ def open_afinador(page):
 
         if tuning_description and instrument_description.value != "Instrumento":
 
+            notas_existentes = ["Cb","C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#", "Ab", "A", "A#", "Bb", "B"]
+
             notas = []
             notas_do_instrumento = []
 
             for i, textfield in enumerate(cordas_container.content.controls):
                 corda = textfield.controls[1].value
-                notas_do_instrumento.append(corda)
 
-                notas.append((corda, nota_para_hz(corda)))
+                if len(corda) > 0:
 
-            if tuning_description.value != "":
+                    # verifica se tem número
+                    if any(i.isdigit() and int(i) > 0 for i in re.split('[^0-9]', corda)):
+
+                        verified_string = ""
+                        bmol = False
+
+                        correlation_names_to_chord_notation = [
+                            ("Do", "C"),
+                            ("Re", "D"),
+                            ("Mi", "E"),
+                            ("Fa", "F"),
+                            ("Sol", "G"),
+                            ("La", "A"),
+                            ("Si", "B")
+                        ]
+
+                        for name, chord in correlation_names_to_chord_notation:
+                            parts = re.split('[0-9]+', corda)
+                            for parte in parts:
+                                if parte.isalpha():
+                                    parte = remove_accents(parte)
+
+                                    if parte.lower().__contains__("b"):
+                                        bmol = True
+                                        parte = parte.replace("b", "")
+                                        parte = parte.replace("B", "")
+                                    if parte == name or parte == chord:
+                                        if bmol:
+                                            verified_string = f"{chord}b{corda[-1]}"
+                                        else:
+                                            verified_string = f"{chord}{corda[-1]}"
+
+                        # verifica se tem nota
+                        if any(i in notas_existentes for i in re.split('[0-9]+', verified_string)):
+                            notas_do_instrumento.append(verified_string)
+                            notas.append((verified_string, nota_para_hz(verified_string)))
+
+            if len(notas_do_instrumento) == len(cordas_container.content.controls):
                 insert_tuning(tuning_description.value, notas, instrument_description.value)
                 close_dialog(e, dialog_tuning_create)
+
+            else:
+                for i, textfield in enumerate(cordas_container.content.controls):
+                    corda = textfield.controls[1]
+
+                    if i > len(notas_do_instrumento) - 1:
+                        corda.border_color = ft.Colors.RED
+                        corda.label_style = ft.TextStyle(color=ft.Colors.RED)
+                    else:
+                        set_theme(page, get_current_theme(), update=None)
+
+                page.update()
+
+            instrument_description.options=[
+                ft.DropdownOption(
+                    text=inst["nome"]
+                )
+                for inst in get_instruments_name_strings()
+            ]
 
     def open_dropdown(e, descricao):
 
@@ -723,6 +801,8 @@ def open_afinador(page):
             border_radius = 20
         ),
     )
+
+    page.on_resize = on_window_resized
 
     return ft.Stack(
         expand=True,

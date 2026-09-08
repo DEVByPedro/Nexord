@@ -7,17 +7,16 @@ from apps.app_configure_structure import app_configure_structure as configure_st
 
 import flet as ft
 
-
 def main(page: ft.Page):
 
 	page.title = "Nexord"
 
 	page.padding = 0
 
-	page.window.icon = "nexord.png"
+	page.window.icon = "nexord.ico"
 
-	page.window.width = 1000
-	page.window.height = 800
+	page.window.min_width = 1000
+	page.window.min_height = 800
 
 	configure_structure.configure_application_structure(page)
 
@@ -25,4 +24,4 @@ def main(page: ft.Page):
 	page.update()
 
 
-ft.run(main, assets_dir="src/icon")
+ft.run(main, assets_dir="assets")
