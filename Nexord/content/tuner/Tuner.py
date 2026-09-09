@@ -223,14 +223,18 @@ def open_afinador(page):
 
     def create_tuning(e):
 
-        if not tuning_description:
-            tuning_description.border_color = ft.Colors.RED
-            tuning_description.label_style = ft.TextStyle(color=ft.Colors.RED)
-        if instrument_description.value == "Instrumento":
-            instrument_description.border_color = ft.Colors.RED
-            instrument_description.label_style = ft.TextStyle(color=ft.Colors.RED)
+        if tuning_description.value == "":
+            tuning_description.data = "field_wrong"
+        else:
+            tuning_description.data = "field_correct"
+        if instrument_description.value == None:
+            instrument_description.data = "drop_incorrect"
+        else:
+            instrument_description.data = "drop_correct"
 
-        if tuning_description and instrument_description.value != "Instrumento":
+        set_theme(page, get_current_theme())
+
+        if tuning_description.value != "" and instrument_description.value != "Instrumento":
 
             notas_existentes = ["Cb","C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#", "Ab", "A", "A#", "Bb", "B"]
 
@@ -264,12 +268,15 @@ def open_afinador(page):
                                 if parte.isalpha():
                                     parte = remove_accents(parte)
 
-                                    if parte.lower().__contains__("b"):
-                                        bmol = True
-                                        parte = parte.replace("b", "")
-                                        parte = parte.replace("B", "")
-                                    if parte == name or parte == chord:
-                                        if bmol:
+                                    base = parte
+                                    local_bmol = False
+
+                                    if len(parte) > 1 and parte[-1].lower().__contains__("b"):
+                                        local_bmol = True
+                                        base = parte[:-1]
+
+                                    if base == name or base == chord:
+                                        if local_bmol:
                                             verified_string = f"{chord}b{corda[-1]}"
                                         else:
                                             verified_string = f"{chord}{corda[-1]}"
@@ -283,24 +290,32 @@ def open_afinador(page):
                 insert_tuning(tuning_description.value, notas, instrument_description.value)
                 close_dialog(e, dialog_tuning_create)
 
+                afinacoes = get_all_tuning_saved()
+                afinacoes.append({"afinacao_descricao": " + Criar Afinação"})
+                afinacoes.reverse()
+
+                tuner_button_chooser.options=[
+                    ft.DropdownOption(
+                        text=tuning["afinacao_descricao"],
+                    )
+                    for i, tuning in enumerate(afinacoes)
+                ]
+
+                tuner_button_chooser.update()
+
             else:
                 for i, textfield in enumerate(cordas_container.content.controls):
                     corda = textfield.controls[1]
 
-                    if i > len(notas_do_instrumento) - 1:
-                        corda.border_color = ft.Colors.RED
-                        corda.label_style = ft.TextStyle(color=ft.Colors.RED)
+                    if corda.value not in notas_do_instrumento:
+                        corda.data = "field_wrong"
+
                     else:
-                        set_theme(page, get_current_theme(), update=None)
+                        corda.data = "field_correct"
+                    set_theme(page, get_current_theme())
 
-                page.update()
 
-            instrument_description.options=[
-                ft.DropdownOption(
-                    text=inst["nome"]
-                )
-                for inst in get_instruments_name_strings()
-            ]
+        page.update()
 
     def open_dropdown(e, descricao):
 

@@ -95,7 +95,14 @@ def set_theme(page, theme, root=None, update=True):
 			control.filled = True
 			control.bgcolor = button_color
 			control.fill_color = button_color
-			control.border_color = "#444444"
+
+			if control.data == "drop_correct":
+				control.label_style=ft.TextStyle(color=ft.Colors.GREEN)
+				control.border_color = ft.Colors.GREEN
+
+			if control.data == "drop_incorrect":
+				control.label_style=ft.TextStyle(color=ft.Colors.RED)
+				control.border_color = ft.Colors.RED
 
 		elif isinstance(control, ft.Container):
 			control.bgcolor = card_color
@@ -136,6 +143,13 @@ def set_theme(page, theme, root=None, update=True):
 				control.border_color = color_border_textfield_wrong
 				control.focused_border_color = color_border_textfield_wrong
 				control.cursor_color = color_border_textfield_wrong
+
+			if control.data == "field_correct":
+				control.label_style = ft.TextStyle(color=ft.Colors.GREEN)
+				control.border_color = ft.Colors.GREEN
+				control.focused_border_color = ft.Colors.GREEN
+				control.cursor_color = ft.Colors.GREEN
+				control.bgcolor = textfield_bgcolor
 
 		elif isinstance(control, ft.Icon):
 			if control.data == "leftbar_button_icon":

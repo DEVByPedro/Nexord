@@ -10,6 +10,15 @@ from content.instruments.InstrumentsConfig import get_all_instruments, insert_ne
 
 def open_instruments(page: ft.Page):
 
+    def just_digit(e):
+        valor = e.control.value
+
+        novo_valor = "".join(c for c in valor if c.isdigit())
+
+        if valor != novo_valor:
+            e.control.value = novo_valor
+            e.control.update()
+
     def favorite_instrument_function(e, index):
 
         container = e.control
@@ -190,11 +199,11 @@ def open_instruments(page: ft.Page):
             if not brand:
                 brand_field.border_color = ft.Colors.RED
                 brand_field.label_style = ft.TextStyle(color=ft.Colors.RED)
-            if not strings or any(letra.isalpha() for letra in strings):
+            if not strings:
                 strings_field.border_color = ft.Colors.RED
                 strings_field.label_style = ft.TextStyle(color=ft.Colors.RED)
 
-            if name and description and brand and strings and not any(letra.isalpha() for letra in strings):
+            if name and description and brand and strings:
 
                 edit_instrument_json(index, name, description, brand, strings)
                 close_dialog(e, insert_instrument_dialog_edit)
@@ -275,6 +284,7 @@ def open_instruments(page: ft.Page):
                                     value=get_strings_name_by_index(index),
                                     hint_text="Ex: 3, 4, 5, 6...",
                                     label="Cordas",
+                                    on_change=just_digit,
                                 ),
                             ],
                             col={"xs": 12, "sm": 6, "md": 3},
@@ -509,6 +519,7 @@ def open_instruments(page: ft.Page):
                                 cordas_field := ft.TextField(
                                     hint_text="Ex: 3, 4, 5, 6...",
                                     label="Cordas",
+                                    on_change=just_digit
                                 ),
                             ],
                             col={"xs": 12, "sm": 6, "md": 3},

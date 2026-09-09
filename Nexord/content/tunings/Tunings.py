@@ -45,13 +45,8 @@ def open_tuning(e):
     content = ft.Container(
         expand=True,
         padding=20,
-        content=ft.Container(
-            ft.Column(
+        content=ft.Column(
                 [
-
-                    tuning_header,
-
-                    ft.Divider(),
 
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
@@ -59,10 +54,6 @@ def open_tuning(e):
                 spacing=30,
                 expand=True,
             ),
-            padding=30,
-            border_radius=20,
-            expand=True,
-        ),
     )
 
     return ft.Stack(
