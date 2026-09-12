@@ -6,7 +6,7 @@ import asyncio
 import math
 
 from config.user.microphone.MicrophoneSettings import get_saved_microphones
-from content.tuner.afinacoes.Afinacoes import get_current_tuning_notes_frequency
+from content.application.infra.tuner.afinacoes.Afinacoes import get_current_tuning_notes_frequency
 
 GAUGE_SIZE = 300
 START_ANGLE = math.pi

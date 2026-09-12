@@ -1,0 +1,12 @@
+{
+    "instrumentos": [
+        {
+            "index": 1,
+            "instrumento_nome": "LPS 200",
+            "instrumento_descricao": ".",
+            "instrumento_marca": "Strinberg",
+            "instrumento_quantidade_cordas": 6
+        }
+    ],
+    "instrumentos_favoritos": []
+}

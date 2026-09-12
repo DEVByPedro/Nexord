@@ -1,0 +1,15 @@
+{
+    "all_microphones": [
+        {
+            "index": 1,
+            "id": "{0.0.1.00000000}.{0912f046-06ef-461c-a769-c69a637d5a7c}",
+            "name": "Microfone (3- fifine Microphone)"
+        },
+        {
+            "index": 2,
+            "id": "{0.0.1.00000000}.{880d4066-7889-49e2-8bd1-55f952415655}",
+            "name": "Microfone (2- fifine Headset)"
+        }
+    ],
+    "default_microphone": "Microfone (3- fifine Microphone)"
+}

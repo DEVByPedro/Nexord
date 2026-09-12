@@ -1,5 +1,5 @@
-from content.instruments.InstrumentsConfig import create_instruments_json
-from content.tuner.afinacoes.Afinacoes import create_afinacoes_json
+from content.application.infra.instruments.InstrumentsConfig import create_instruments_json
+from content.application.infra.tuner.afinacoes.Afinacoes import create_afinacoes_json
 
 
 def install_dependencies():

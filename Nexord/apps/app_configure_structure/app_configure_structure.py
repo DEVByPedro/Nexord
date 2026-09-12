@@ -1,12 +1,11 @@
 import flet as ft
 
 from apps.app_configure_theme.app_configure_theme import set_theme, get_current_theme, swap_theme
-from config.leftbar.LeftBarConfig import get_current_leftbar_state, configure_leftbar_json
-from config.user.microphone.MicrophoneSettings import create_microphones_json
-from content.instruments.Instruments import open_instruments
-from content.tuner.Tuner import open_afinador
-from content.metronome.Metronome import open_metronome
-from content.tunings.Tunings import open_tuning
+from config.leftbar.LeftBarConfig import get_current_leftbar_state
+from content.application.infra.instruments.Instruments import open_instruments
+from content.application.infra.tuner.Tuner import open_afinador
+from content.application.infra.metronome.Metronome import open_metronome
+from content.application.infra.tunings.Tunings import open_tuning
 
 other_page = ft.Container(expand=True)
 rota_atual = "afinacoes"
