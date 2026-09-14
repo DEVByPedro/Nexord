@@ -61,7 +61,38 @@
                     311.13
                 ]
             ]
+        },
+        {
+            "index": 3,
+            "afinacao_descricao": "Drop D",
+            "afinacao_instrumento": 1,
+            "notas": [
+                [
+                    "D2",
+                    73.42
+                ],
+                [
+                    "G2",
+                    98.0
+                ],
+                [
+                    "C3",
+                    130.81
+                ],
+                [
+                    "F3",
+                    174.61
+                ],
+                [
+                    "A3",
+                    220.0
+                ],
+                [
+                    "D4",
+                    293.66
+                ]
+            ]
         }
     ],
-    "afinacao_atual": 2
+    "afinacao_atual": 1
 }

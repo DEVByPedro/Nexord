@@ -74,17 +74,19 @@ def configure_window(page: ft.Page):
 		global rota_atual
 
 		def update_clicked_button(e, route):
-			buttons = content.controls[1]
+			if content.controls[1] != ft.Divider():
+				buttons = content.controls[1]
 
-			change_route(route)
+				change_route(route)
 
-			for button in buttons.controls:
-				button_text=button.content.controls[1].value.lower()
-				if button_text == route:
-					button.data = "hovered_button"
-				else:
-					button.data = ""
-				set_theme(page, get_current_theme())
+				for button in buttons.controls:
+					if button != ft.Divider():
+						button_text=button.content.controls[1].value.lower()
+						if button_text == route:
+							button.data = "hovered_button"
+						else:
+							button.data = ""
+						set_theme(page, get_current_theme())
 
 		def change_route(route):
 			global rota_atual
@@ -210,7 +212,7 @@ def configure_window(page: ft.Page):
 						),
 
 						ft.Divider(),
-						
+
 						escalas := ft.Button(
 							ft.Row(
 								[
