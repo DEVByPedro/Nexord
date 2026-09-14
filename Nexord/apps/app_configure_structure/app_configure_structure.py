@@ -48,9 +48,10 @@ def configure_window(page: ft.Page):
 
 		for i in range(len(buttons)):
 			for j in range(len(buttons[i].controls)):
-				text = buttons[i].controls[j].content.controls[1]
+				if buttons[i].controls[j] != ft.Divider():
+					text = buttons[i].controls[j].content.controls[1]
 
-				text.visible = True if get_current_leftbar_state() else False
+					text.visible = True if get_current_leftbar_state() else False
 
 	def animate_leftbar(e, leftbar):
 		leftbar.width = 300 if leftbar.width == 50 else 50
@@ -58,9 +59,10 @@ def configure_window(page: ft.Page):
 
 		for i in range(len(buttons)):
 			for j in range(len(buttons[i].controls)):
-				text = buttons[i].controls[j].content.controls[1]
+				if buttons[i].controls[j] != ft.Divider():
+					text = buttons[i].controls[j].content.controls[1]
 
-				text.visible = True if text.visible == False else False
+					text.visible = True if text.visible == False else False
 
 		leftbar.update()
 
@@ -138,14 +140,10 @@ def configure_window(page: ft.Page):
 							),
 							on_click=lambda e: animate_leftbar(e, leftbar),
 							on_hover=hover_button,
-						)
-					],
-					horizontal_alignment=ft.CrossAxisAlignment.STRETCH
-				),
+						),
 
-				# Middle Buttons
-				ft.Column(
-					[
+						ft.Divider(),
+
 						afinador := ft.Button(
 							ft.Row(
 								[
@@ -210,6 +208,9 @@ def configure_window(page: ft.Page):
 							),
 							on_click=lambda e, button="afinacoes": update_clicked_button(e, button)
 						),
+
+						ft.Divider(),
+						
 						escalas := ft.Button(
 							ft.Row(
 								[
@@ -248,6 +249,8 @@ def configure_window(page: ft.Page):
 				# Bottom Buttons
 				ft.Column(
 					[
+						ft.Divider(),
+
 						tema := ft.Button(
 							ft.Row(
 								[
